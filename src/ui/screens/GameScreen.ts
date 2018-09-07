@@ -1,4 +1,3 @@
-import PhaserTextStyle = Phaser.PhaserTextStyle;
 import {DC} from "../Elements/htmlPlugin";
 import {CheckBoxConfiguration} from "../Elements/CheckBox/CheckBoxConfiguration";
 import {CheckBoxParameters} from "../Elements/CheckBox/CheckBoxParameters";
@@ -13,25 +12,38 @@ import {InputType} from "../Elements/Input/InputType";
 
 
 export class GameScreen extends Phaser.Group {
-    public static SOME_VALUE : number;
-    private exampleStyle : PhaserTextStyle = {
-        align: 'center', font: 'Arial Black', fontSize: 35,
-        fontWeight: 'bold', stroke: '#c4caff', strokeThickness: 6, fill: '#13d673'
-    };
+
     constructor(g) {
         super(g);
         console.log('CREATE');
-        this.game.stage.backgroundColor = '#13d673';
+        this.game.stage.backgroundColor = '#00acd6';
 
+        this.initPlugins(g);
+    }
+
+    private initPlugins(g : Phaser.Game) : void {
+        this.initCheckBox(g);
+        this.initInput(g);
+        this.initRadioButtons(g);
+    }
+
+    private initCheckBox(g : Phaser.Game) : void {
+        //CheckBox
         let chBoxParameters = new CheckBoxParameters(100,100);
         let chBoxConfiguration = new CheckBoxConfiguration(50,50,
             new LabelConfiguration("CheckBox Example",{font: 'Arial Black', fontSize: 17, fontWeight: 'bold'}),
             Images.ImagesUnchecked.getName(),
             Images.ImagesChecked.getName(),new Form(true));
+
         const checkBox = new DC.Input.CheckBox(g,chBoxParameters,chBoxConfiguration);
+    }
+
+    private initInput(g : Phaser.Game) : void {
+        //Input
         let inputParameters = new InputParameters(50,200);
         let inputConfiguration = new InputConfiguration(300,30,650,18,
-            '','',InputType.NUMBER);
+            '','',InputType.TEXT);
+
         let input;
         switch (inputConfiguration.inputType) {
             case InputType.NUMBER :
@@ -44,15 +56,17 @@ export class GameScreen extends Phaser.Group {
                 input = new DC.Input.InputPassword(g,inputParameters,inputConfiguration);
                 break;
         }
+    }
 
+    private initRadioButtons(g : Phaser.Game) {
+        //RadioButtons
         //by default distance is 50
         let radioParameters = new RadioParameters(400,50,70);
         let radioConfiguration = new RadioConfiguration(50,50,1,1,['Milk','Meat','Bread','Egg','etc'],
             Images.ImagesRadiobtnUnchecked.getName(), Images.ImagesRadiobtnChecked.getName(),
             {font: 'Arial Black', fontSize: 17, fontWeight: 'bold'},false,2);
+
         const radioGroup = new DC.Input.RadioGroupButton(g, radioParameters, radioConfiguration);
-
-
     }
 
 }

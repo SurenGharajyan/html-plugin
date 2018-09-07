@@ -179,30 +179,29 @@ export namespace DC {
         }
 
         export class InputArea extends Phaser.Group {
-            protected delTextChar : Phaser.Key;
             protected inputGroup : Phaser.Group;
             protected spriteBorder : Phaser.Sprite;
             protected spriteInpArea : Phaser.Sprite;
             protected line : Phaser.Graphics;
-            protected timeBlink : Phaser.TimerEvent;
+            protected maskTxt : Phaser.Graphics;
             protected textInput : Phaser.Text;
             protected textFocusing : Phaser.Text;
-            protected textHint : Phaser.Text;
-            protected distAllElSync : number;
-            protected lineStartY : number;
-            protected lineEndY : number;
-            protected maskTxt : Phaser.Graphics;
-            protected isFocused : boolean;
-            protected timeStop;
-            protected longPressWithCount : number = 0;
-            protected linePositionIndex : number = 0;
-            protected isLineIndexChanged : boolean;
-            protected isDoubleClick : boolean;
+            protected placeHolder : Phaser.Text;
+            protected backSpaceKey : Phaser.Key;
             protected leftKey : Phaser.Key;
             protected rightKey : Phaser.Key;
             protected enterKey : Phaser.Key;
-            protected isLengthBig : boolean;
+            protected timeBlink : Phaser.TimerEvent;
+            protected timeStop;
             protected textValue : string;
+            protected distAllElSync : number;
+            protected longPressWithCount : number = 0;
+            protected linePositionIndex : number = 0;
+            protected isLineIndexChanged : boolean;
+            protected isLengthBig : boolean;
+            protected isFocused : boolean;
+            protected isDoubleClick : boolean;
+
             protected configuration : InputConfiguration;
 
             constructor(g : Phaser.Game, param : InputParameters, config : InputConfiguration) {
@@ -248,14 +247,14 @@ export namespace DC {
                     '', {fontSize: this.configuration.size}, this.inputGroup);
                             //this.lineEndY - this.lineStartY
                 if (this.configuration.placeHolderValue != '') {
-                    this.textHint = this.game.add.text(2 * this.distAllElSync,
+                    this.placeHolder = this.game.add.text(2 * this.distAllElSync,
                         this.spriteInpArea.worldPosition.y + 2 * this.distAllElSync,
                         this.configuration.placeHolderValue, {
                             fontSize: this.configuration.size,
                             fill: '#b0b0b0'
                         }, this.inputGroup);
                     if (this.textInput.text.length > 0) {
-                        this.textHint.visible = false;
+                        this.placeHolder.visible = false;
                     }
                 }
                 this.textFocusing = this.game.add.text(2 * this.distAllElSync,
@@ -442,9 +441,9 @@ export namespace DC {
                     this.spriteBorder.visible = true;
                         this.game.input.keyboard.addCallbacks(this, null, null, this.anyKeyPressed);
 
-                    this.delTextChar = this.game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
-                    this.delTextChar.onDown.add(this.deleteText, this);
-                    this.delTextChar.onUp.add(this.onUpFewKeys,this);
+                    this.backSpaceKey = this.game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
+                    this.backSpaceKey.onDown.add(this.deleteText, this);
+                    this.backSpaceKey.onUp.add(this.onUpFewKeys,this);
                 } else {
                     this.removeFocus();
                 }
@@ -482,21 +481,14 @@ export namespace DC {
                 this.line.visible = true;
                 initialTextWidth = this.textInput.width;
 
-                //         this.textValue = [
-                //             this.textValue.slice(0, this.linePositionIndex),
-                //             char,
-                //             this.textValue.slice(this.linePositionIndex)
-                //         ].join('');
-                //         char = '•';
-
                 this.textInput.text = this.textFocusing.text = [
                     this.textInput.text.slice(0, this.linePositionIndex),
                     char,
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
-                    if (this.textHint != null) {
-                        this.textHint.visible = this.textInput.text.length == 0;
+                    if (this.placeHolder != null) {
+                        this.placeHolder.visible = this.textInput.text.length == 0;
                     }
                 finalTextWidth = this.textInput.width;
 
@@ -537,8 +529,8 @@ export namespace DC {
                         this.textInput.text.slice(this.linePositionIndex)
                     ].join('');
 
-                if (this.textHint != null) {
-                    this.textHint.visible = this.textInput.text.length == 0;
+                if (this.placeHolder != null) {
+                    this.placeHolder.visible = this.textInput.text.length == 0;
                 }
 
                 finalTextWidth = this.textInput.width;
@@ -578,8 +570,6 @@ export namespace DC {
             }
 
             protected initLine(linePosition: number) : void {
-                this.lineStartY = this.spriteInpArea.worldPosition.y + 2 * linePosition;
-                // this.lineEndY = this.spriteInpArea.worldPosition.y + this.spriteInpArea.height - 2 * linePosition;
                 this.line = this.game.add.graphics(
                     this.spriteInpArea.worldPosition.x + 2 * linePosition,
                     0, this.inputGroup);
@@ -595,7 +585,7 @@ export namespace DC {
             }
 
             public  update() : void {
-                if (this.delTextChar != null && this.delTextChar.isDown){
+                if (this.backSpaceKey != null && this.backSpaceKey.isDown){
                     this.longPressWithCount++;
                     if (this.longPressWithCount > 30) {
                         this.deleteText();
@@ -671,14 +661,14 @@ export namespace DC {
                 this.textInput.text = this.configuration.textValue;
 
                 if (this.configuration.placeHolderValue != '') {
-                    this.textHint = this.game.add.text(2 * this.distAllElSync,
+                    this.placeHolder = this.game.add.text(2 * this.distAllElSync,
                         this.spriteInpArea.worldPosition.y + 2 * this.distAllElSync,
                         this.configuration.placeHolderValue, {
                             fontSize: this.configuration.size,
                             fill: '#b0b0b0'
                         }, this.inputGroup);
                     if (this.textInput.text.length > 0) {
-                        this.textHint.visible = false;
+                        this.placeHolder.visible = false;
                     }
                 }
                 this.textFocusing = this.game.add.text(2 * this.distAllElSync,
@@ -722,8 +712,8 @@ export namespace DC {
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
-                if (this.textHint != null) {
-                    this.textHint.visible = this.textInput.text.length == 0;
+                if (this.placeHolder != null) {
+                    this.placeHolder.visible = this.textInput.text.length == 0;
                 }
                 finalTextWidth = this.textInput.width;
 
@@ -740,7 +730,7 @@ export namespace DC {
                 }
 
                 if (this.line.x >= this.spriteInpArea.width) {
-                    //TODO if you can, add dynamic position from character
+                    // TODO if you can, add dynamic position from character
                     this.line.x = this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync;
                     this.textInput.x -= finalTextWidth - initialTextWidth;
                     this.textFocusing.x -= finalTextWidth - initialTextWidth;
@@ -764,8 +754,8 @@ export namespace DC {
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
-                if (this.textHint != null) {
-                    this.textHint.visible = this.textInput.text.length == 0;
+                if (this.placeHolder != null) {
+                    this.placeHolder.visible = this.textInput.text.length == 0;
                 }
 
                 finalTextWidth = this.textInput.width;
@@ -805,9 +795,9 @@ export namespace DC {
                     this.spriteBorder.visible = true;
                     this.game.input.keyboard.addCallbacks(this, null, null, this.anyKeyPressed);
 
-                    this.delTextChar = this.game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
-                    this.delTextChar.onDown.add(this.deleteText, this);
-                    this.delTextChar.onUp.add(this.onUpFewKeys,this);
+                    this.backSpaceKey = this.game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
+                    this.backSpaceKey.onDown.add(this.deleteText, this);
+                    this.backSpaceKey.onUp.add(this.onUpFewKeys,this);
                 } else {
                     this.removeFocus();
                 }
@@ -985,8 +975,8 @@ export namespace DC {
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
-                if (this.textHint != null) {
-                    this.textHint.visible = this.textInput.text.length == 0;
+                if (this.placeHolder != null) {
+                    this.placeHolder.visible = this.textInput.text.length == 0;
                 }
                 finalTextWidth = this.textInput.width;
 
@@ -1032,8 +1022,8 @@ export namespace DC {
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
-                if (this.textHint != null) {
-                    this.textHint.visible = this.textInput.text.length == 0;
+                if (this.placeHolder != null) {
+                    this.placeHolder.visible = this.textInput.text.length == 0;
                 }
 
                 finalTextWidth = this.textInput.width;
@@ -1058,5 +1048,6 @@ export namespace DC {
                 this.initRecreateBlinkTimer();
             }
         }
+
     }
 }

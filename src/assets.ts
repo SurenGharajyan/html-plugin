@@ -36,6 +36,11 @@ export namespace Images {
 
         static getPNG(): string { return require('assets/images/radiobtn_unchecked.png'); }
     }
+    export class ImagesScrollArea {
+        static getName(): string { return 'scroll_area'; }
+
+        static getPNG(): string { return require('assets/images/scroll_area.png'); }
+    }
     export class ImagesUnchecked {
         static getName(): string { return 'unchecked'; }
 
@@ -45,6 +50,11 @@ export namespace Images {
         static getName(): string { return 'up'; }
 
         static getPNG(): string { return require('assets/images/up.png'); }
+    }
+    export class ImagesWhiteBackground {
+        static getName(): string { return 'white_background'; }
+
+        static getPNG(): string { return require('assets/images/white_background.png'); }
     }
 }
 

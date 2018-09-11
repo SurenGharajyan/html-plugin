@@ -3,7 +3,7 @@ import {GameScreen} from '../ui/screens/GameScreen';
 
 // @ts-ignore
 export default class Game extends Phaser.State {
-    // private backgroundImage : Phaser.TileSprite;
+    // private backgroundColor : Phaser.TileSprite;
     private s : GameScreen;
     public preload() : void {
         console.log('PRELOAD');

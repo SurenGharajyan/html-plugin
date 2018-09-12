@@ -19,7 +19,6 @@ export class GameScreen extends Phaser.Group {
         super(g);
         console.log('CREATE');
         this.game.stage.backgroundColor = '#00aa8a';
-
         this.initPlugins(g);
     }
 
@@ -73,13 +72,16 @@ export class GameScreen extends Phaser.Group {
     }
 
     private initSelectPlugin(g : Phaser.Game) {
-        const selectParam = new SelectParameters(40,40);
-        const selectConfig = new SelectConfiguration(0,30,
-            ['McLaren','Lamborghini','Mercedes-Benz', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Pejo'],
-            18,130,200,4);
+        const selectParam = new SelectParameters(50,100);
+        //fontAndOtherSize is lower then height with 10
+        const selectConfig = new SelectConfiguration(150,32,
+            ['McLaren is a best car','Mercedes-Benz is a car','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
+            // ['Petrosyan','Movsisyan','Baghdasaryan','Karapetyan','Levonyan','Khachatyan','Sevoyan'],
+            ['McL Value',"Mers Value","Lambo Value","BMW Value", "Opel Value", "Mitsubishi Value", "Nissan Value", "Kia Value", "Ford Value", "Peugeot Value"],
+
+            25,200,1);
 
         const selectPg = new DC.Input.SelectPlugin(g, selectParam, selectConfig);
     }
-
 
 }

@@ -1,17 +1,16 @@
 import {Configuration} from "../common/Configuration";
-import PhaserTextStyle = Phaser.PhaserTextStyle;
 
 export class SelectConfiguration extends Configuration{
     private _label : string[];
     private _fontAndOtherSize : number;
     private _byDefault : number;
-    private _widthOfShowingSpace : number;
     private _heightOfShowingSpace : number;
-    constructor(width: number, height: number, label: string[], fontAndOtherSize : number, widthOfShowingSpace : number, heightOfShowingSpace : number, byDefault? : number) {
+    private _values : string[];
+    constructor(width: number, height: number, label: string[], values : string[] ,fontAndOtherSize : number, heightOfShowingSpace : number, byDefault? : number) {
         super(width, height);
         this._label = label;
+        this._values = values;
         this._fontAndOtherSize = fontAndOtherSize;
-        this._widthOfShowingSpace = widthOfShowingSpace;
         this._heightOfShowingSpace = heightOfShowingSpace;
         this._byDefault = byDefault;
     }
@@ -43,19 +42,19 @@ export class SelectConfiguration extends Configuration{
         this._byDefault = value;
     }
 
-    get widthOfShowingSpace() {
-        return this._widthOfShowingSpace;
-    }
-
-    set widthOfShowingSpace(value) {
-        this._widthOfShowingSpace = value;
-    }
-
     get heightOfShowingSpace(): number {
         return this._heightOfShowingSpace;
     }
 
     set heightOfShowingSpace(value: number) {
         this._heightOfShowingSpace = value;
+    }
+
+    get values(): string[] {
+        return this._values;
+    }
+
+    set values(value: string[]) {
+        this._values = value;
     }
 }

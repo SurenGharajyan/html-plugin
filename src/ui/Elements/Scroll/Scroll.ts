@@ -2,6 +2,7 @@ import Color = Phaser.Color;
 import {Images} from '../../../assets';
 import {ScrollConfiguration} from "./ScrollConfiguration";
 import {ScrollBar} from "./ScrollBar";
+import {SelectorItem} from "../Select/SelectorItem";
 
 
 export class Scroll extends Phaser.Group {
@@ -24,58 +25,85 @@ export class Scroll extends Phaser.Group {
     private percent : number = 0;
     private bgGraphic : Phaser.Graphics;
 
-    constructor(g,array : Phaser.Group[],config : ScrollConfiguration) {
+    constructor(g, array : SelectorItem[], configuration : ScrollConfiguration) {
         super(g);
-        this.init(array,config);
+        this.init(array, configuration);
     }
 
-    private init(arr : Phaser.Group[],configuration : ScrollConfiguration) : void {
+    private init(arr : SelectorItem[], configuration : ScrollConfiguration) : void {
         this.initElements(arr,configuration);
 
         this.initScrollSystem(configuration);
         this.attachListeners();
     }
 
-    private initBackground(configuration : ScrollConfiguration) : void {
+    private initBackground() : void {
         this.bgGraphic = this.game.add.graphics(0,0,this.groupOfElements);
-        this.bgGraphic.beginFill(configuration.backgroundColor,1);
-        this.bgGraphic.drawRect(0,0,this.width,this.height);
-        this.bgGraphic.endFill();
     }
 
-    private initElements(elements : Phaser.Group[], configuration : ScrollConfiguration) : void {
+    private initElements(elements : SelectorItem[], configuration : ScrollConfiguration) : void {
         this.groupOfElements = this.game.add.group(this);
-        this.initBackground(configuration);
         // this.groupOfElements.scale.set(0.5);
+        this.initBackground();
         for (let i = 0; i < elements.length ; i++) {
             this.element = elements[i];
+            this.element.onChildInputDown.add(this.onChildClicked.bind(this,this.element,configuration.selectedText),this);
+            this.element.onChildInputOver.add(this.onChildHovered.bind(this,this.element),this);
+            this.element.onChildInputOut.add(this.onChildOut.bind(this,this.element),this);
             this.groupOfElements.addChild(this.element);
         }
         this.groupOfElements.x = configuration.position.x;
         this.initMask(configuration);
+        this.bgGraphic.beginFill(configuration.backgroundColor,1);
+        this.bgGraphic.drawRect(0,0,this.groupOfElements.width,this.groupOfElements.height);
+        this.bgGraphic.endFill();
         this.groupOfElements.y = this.maskOfElements.y;
         this.groupOfElements.width = configuration.widthGroup;
+
+
+    }
+
+    private onChildClicked(group,selectedText) : void {
+        if (this.maskOfElements.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)) {
+            selectedText.text = group.getChildAt(1).text;
+            console.log('the value of text = ' + group.value);
+        }
+    }
+
+    private onChildHovered(groupText) : void {
+        if (this.groupOfElements.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)
+            // this.maskOfElements.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)
+    ) {
+            groupText.getChildAt(0).tint = 0x000fff;
+            groupText.getChildAt(1).fill = '#ffffff';
+        }
+    }
+
+    private onChildOut(groupText) : void {
+        groupText.getChildAt(0).tint = 0xffffff;
+        groupText.getChildAt(1).fill = '#000000';
     }
 
     private initMask(configuration : ScrollConfiguration) : void {
-        //CHANGE VALUE CUSTOM HERE
         this.maskYPos = configuration.position.y;
         this.maskHeight = configuration.maskHeight;
 
         this.maskOfElements = this.game.add.graphics(this.groupOfElements.x, this.maskYPos,this);
         this.maskOfElements.beginFill(Color.AQUA);
         this.maskOfElements.drawRect(0,0,
-            configuration.maskWidth, this.maskHeight );
+            configuration.widthGroup, this.maskHeight );
         this.maskOfElements.endFill();
         this.groupOfElements.mask = this.maskOfElements;
-        this.maskOfElements.inputEnabled = true;
-        this.maskOfElements.events.onInputDown.add(this.maskClick, this);
-        this.maskOfElements.events.onInputUp.add(this.maskUp, this);
+        if (configuration.isEnableClickOnMask) {
+            this.maskOfElements.inputEnabled = true;
+            this.maskOfElements.events.onInputDown.add(this.maskClick, this);
+            this.maskOfElements.events.onInputUp.add(this.maskUp, this);
+        }
     }
 
     private initScrollSystem(config : ScrollConfiguration) : void {
         this.scrollGroup = this.game.add.group(this);
-        this.scrollGroup.x = this.groupOfElements.x + this.groupOfElements.width;
+        this.scrollGroup.x = this.groupOfElements.x + config.widthGroup;
         this.scrollGroup.y = 0;
 
         this.scrollUp = this.game.add.sprite(0,0,Images.ImagesUp.getName());

@@ -1070,22 +1070,16 @@ export namespace DC {
             private isFocused : boolean;
             private selectedText : Phaser.Text;
             private maskText : Phaser.Graphics;
-            private groupOfList : Phaser.Group;
-            private listBackground : Phaser.Sprite;
-            private textOfList : Phaser.Text;
-            private isSecondClicked : boolean;
-            private hoveredOnText : Phaser.Graphics;
             private scroller : Scroll;
             private scrollConfiguration : ScrollConfiguration;
             private widthScrollBar : number;
 
-            constructor(g : Phaser.Game, param: SelectParameters, config: SelectConfiguration) {
+            constructor(g : Phaser.Game, param : SelectParameters, config : SelectConfiguration) {
                 super(g);
                 this.init(param, config);
             }
 
-            private init(parameters : SelectParameters, configuration: SelectConfiguration) : void {
-                this.countMaxLength(configuration);
+            private init(parameters : SelectParameters, configuration : SelectConfiguration) : void {
                 this.initGenGroup(parameters);
                 this.initBackForeImages(configuration);
                 this.initSelectedText(configuration);
@@ -1093,32 +1087,36 @@ export namespace DC {
                 this.initScroller(configuration);
 
 
-                this.initEvents(configuration);
+                this.initEvents();
             }
 
-            private countMaxLength(configuration: SelectConfiguration) {
-                let textObject : Phaser.Text;
-                textObject = this.game.add.text(0,0,'',{fontSize : configuration.fontAndOtherSize},this.groupOfSelect);
-                textObject.visible = false;
+            private countMaxLength(configuration : SelectConfiguration) {
+                let textObject : Phaser.Text = this.game.add.text(0,0,'',{fontSize : configuration.fontAndOtherSize},this.groupOfSelect);
+                let textSizeChecking : Phaser.Text = this.game.add.text(0,0,'',{fontSize : configuration.fontAndOtherSize},this.groupOfSelect);
+
+                textSizeChecking.visible = textObject.visible = false;
                 let max = 0;
                 for (let i = 0; i < configuration.label.length ; i++) {
                     if (configuration.label[i].length > max ) {
                         textObject.text = configuration.label[i];
                         max = configuration.label[i].length;
-                        if (configuration.widthOfShowingSpace < textObject.width) {
-                            let k = 0;
-                            textObject.text = '';
-                            while (configuration.widthOfShowingSpace > textObject.width) {
-                                k++;
-                                textObject.text = configuration.label[i].slice(0, k);
-                            }
-                            textObject.text = configuration.label[i].slice(0, textObject.text.length - 3) + '...';
-                            configuration.label[i] = textObject.text
-                        }
+                    }
+                    textSizeChecking.text = configuration.label[i];
+                    if (configuration.width + configuration.fontAndOtherSize < textSizeChecking.width) {
+                        let k = 0;
+                        textSizeChecking.text = '';
+                        do  {
+                            textSizeChecking.text = configuration.label[i].slice(0, k);
+                            k++;
+                        } while (configuration.width + configuration.fontAndOtherSize > textSizeChecking.width);
+
+                        textSizeChecking.text = configuration.label[i].slice(0, textSizeChecking.text.length - 3) + '...';
+                        configuration.label[i] = textSizeChecking.text;
                     }
                 }
                 this.realWidth = textObject.width;
-
+                // this.selectorBorder.width - this.widthScrollBar - 2 * this.distAllElSync
+                textSizeChecking.destroy();
                 textObject.destroy();
             }
 
@@ -1127,29 +1125,31 @@ export namespace DC {
                 this.groupOfSelect.x = parameters.x;
                 this.groupOfSelect.y = parameters.y;
                 this.distAllElSync = 2;
+                this.widthScrollBar = 20;
             }
 
-            private initBackForeImages(configuration: SelectConfiguration) {
+            private initBackForeImages(configuration : SelectConfiguration) {
                 this.selectorBorder = this.game.add.sprite(0,0,Images.ImagesInputBorderColor.getName(),null, this.groupOfSelect);
-                this.widthScrollBar = 20;
-                this.selectorBorder.width = this.widthScrollBar + this.realWidth + this.distAllElSync;
+                this.countMaxLength(configuration);
+                this.selectorBorder.width = configuration.width + configuration.fontAndOtherSize;
                 this.selectorBorder.height = configuration.height;
                 this.selectorBorder.visible = false;
                 this.selectorArea = this.game.add.sprite(this.distAllElSync,this.distAllElSync,Images.ImagesInputArea.getName(),
                     null, this.groupOfSelect);
-                this.selectorArea.width = this.selectorBorder.width - 2 * this.distAllElSync;
+                this.selectorArea.width = this.selectorBorder.width - 2 * this.distAllElSync - configuration.fontAndOtherSize;
                 this.selectorArea.height = this.selectorBorder.height - 2 * this.distAllElSync;
                 this.selectorArea.inputEnabled = true;
                 this.initArrowGroup(configuration);
             }
 
             private initSelectedText(configuration : SelectConfiguration) : void {
-                this.selectedText = this.game.add.text(2 * this.distAllElSync, this.selectorArea.worldPosition.y + 2 * this.distAllElSync, configuration.label[configuration.byDefault],
+                this.selectedText = this.game.add.text(2 * this.distAllElSync, this.selectorArea.worldPosition.y + 2 * this.distAllElSync,
+                    configuration.label[configuration.byDefault],
                     {fontSize: configuration.fontAndOtherSize},this.groupOfSelect);
-                this.selectedText.y =  2 * this.distAllElSync + this.selectorArea.height/2 - this.selectedText.height / 2;
+                this.selectedText.y =  2 * this.distAllElSync + this.selectorArea.height / 2 - this.selectedText.height / 2;
             }
 
-            private initMask(positionX : number, positionY : number, rectWidth : number,rectHeight : number,whoHaveMask : any) : void {
+            private initMask(positionX : number, positionY : number, rectWidth : number, rectHeight : number, whoHaveMask : any) : void {
                 this.maskText = this.game.add.graphics(positionX,positionY, this);
                 this.maskText.beginFill(0x000);
                 this.maskText.drawRect(this.distAllElSync, this.distAllElSync, rectWidth, rectHeight);
@@ -1157,108 +1157,69 @@ export namespace DC {
                 this.maskText.endFill();
             }
 
-            private initListOfTexts(configuration : SelectConfiguration) : void {
-                this.groupOfList = this.game.add.group();
-                this.groupOfList.x = this.groupOfSelect.x;
-                this.groupOfList.y = this.groupOfSelect.y + this.groupOfSelect.height - this.distAllElSync;
-
-                this.listBackground = this.game.add.sprite(this.distAllElSync,this.distAllElSync,Images.ImagesWhiteBackground.getName(),
-                    null,this.groupOfList);
-                this.listBackground.width = this.groupOfSelect.width;
-                this.listBackground.height = 0;
-                this.initHoverOnTextGraphic(configuration);
-                for (let i = 0; i < configuration.label.length ; i++) {
-                    this.textOfList = this.game.add.text(2 * this.distAllElSync,i * (configuration.fontAndOtherSize + 15), configuration.label[i],
-                        {fontSize : configuration.fontAndOtherSize}, this.groupOfList);
-                    this.textOfList.inputEnabled = true;
-                    this.textOfList.events.onInputOver.add(this.overToText.bind(this,this.textOfList,configuration),this);
-                    this.textOfList.events.onInputOut.add(this.outOfText.bind(this,this.textOfList,configuration),this);
-                    this.textOfList.events.onInputDown.add(this.downToText, this);
-                }
-
-                this.listBackground.height =  this.groupOfList.height;
-                this.initMask(this.groupOfList.x,this.groupOfList.y,this.listBackground.width,this.listBackground.height,this.groupOfList);
-                this.groupOfList.visible = false;
-            }
-
-            private initHoverOnTextGraphic(configuration : SelectConfiguration) : void {
-                this.hoveredOnText = this.game.add.graphics(0, 0 ,this.groupOfList);
-                this.hoveredOnText.beginFill(0x0000FF);
-                this.hoveredOnText.drawRect(0,0,this.groupOfList.width,10 + configuration.fontAndOtherSize);
-                this.hoveredOnText.endFill();
-            }
-
-            private overToText(textObject : Phaser.Text, configuration : SelectConfiguration) : void {
-                textObject.setStyle({fontSize : configuration.fontAndOtherSize , fill : '#ffffff' });
-                this.hoveredOnText.y = textObject.y;
-            }
-
-            private outOfText(textObject : Phaser.Text, configuration : SelectConfiguration) : void {
-                textObject.setStyle({fontSize: configuration.fontAndOtherSize});
-            }
-
-            private downToText(textObject : Phaser.Text) : void {
-                this.selectedText.text = textObject.text;
-                this.hoveredOnText.y = textObject.y;
-            }
-
             private initArrowGroup(configuration : SelectConfiguration) : void {
-                this.arrowBg = this.game.add.sprite(this.selectorArea.x + this.selectorArea.width - configuration.fontAndOtherSize,
-                    this.distAllElSync, Images.ImagesInputArea.getName(),null,this.groupOfSelect);
-                this.arrowBg.width = configuration.fontAndOtherSize;
+                this.groupArrow = this.game.add.group(this);
+                this.groupArrow.x = this.groupOfSelect.x + this.selectorArea.width + this.distAllElSync;
+                this.groupArrow.y = this.groupOfSelect.y;
+                this.arrowBg = this.game.add.sprite(0,
+                    this.distAllElSync, Images.ImagesInputArea.getName(),null,this.groupArrow);
+                this.arrowDown = this.game.add.sprite(0,0,Images.ImagesDown.getName(),null, this.groupArrow);
+                this.arrowBg.width = this.arrowDown.width = this.arrowDown.height = configuration.fontAndOtherSize;
                 this.arrowBg.height = this.selectorArea.height;
+                this.arrowDown.y = this.arrowBg.centerY - this.arrowDown.height / 2;
 
-                this.groupArrow = this.game.add.group(this.groupOfSelect);
-                this.groupArrow.x = this.selectorArea.x + this.selectorArea.width - configuration.fontAndOtherSize;
-                this.arrowDown = this.game.add.sprite(0,0,Images.ImagesDown.getName(),null,this.groupArrow);
-                this.arrowDown.width = this.arrowDown.height = configuration.fontAndOtherSize;
-                this.arrowDown.y = this.groupArrow.centerY;
             }
 
-            private initEvents(configuration : SelectConfiguration) {
-                this.game.input.onTap.add(this.onFocusSelectArea.bind(this,configuration), this);
+            private initEvents() {
+                this.groupOfSelect.inputEnableChildren = true;
+                this.groupArrow.inputEnableChildren = true;
+                this.game.input.onTap.add(this.onFocusSelectArea,this)
             }
 
             private onFocusSelectArea() {
-                if ((this.selectorArea.getBounds().contains(this.game.input.mousePointer.x, this.game.input.mousePointer.y))
-                 || (this.groupArrow.getBounds().contains(this.game.input.mousePointer.x, this.game.input.mousePointer.y))
-                ) {
+                if (this.groupOfSelect.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y) ||
+                    this.groupArrow.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)
+                )
+                 {
+                    this.scroller.visible = !this.scroller.visible;
                     this.isFocused = this.selectorBorder.visible = true;
-                    // this.groupOfList.visible = this.isSecondClicked = !this.isSecondClicked;
-
-                    this.scroller.visible = this.isSecondClicked = !this.isSecondClicked;
                 } else {
-                    this.isSecondClicked = this.scroller.visible = this.isFocused = this.selectorBorder.visible = false;
+                    this.isFocused = this.scroller.visible = this.selectorBorder.visible = false;
                 }
             }
 
             private initScroller(selectConfiguration : SelectConfiguration) {
-                this.scrollConfiguration = new ScrollConfiguration(this.selectorBorder.width - this.widthScrollBar - 2 * this.distAllElSync,
+                this.scrollConfiguration = new ScrollConfiguration(
+                    selectConfiguration.width + selectConfiguration.fontAndOtherSize - this.widthScrollBar - 2 * this.distAllElSync,
                     this.widthScrollBar, new Phaser.Point(
-                    this.groupOfSelect.x + this.distAllElSync,
-                    this.groupOfSelect.y + this.groupOfSelect.height + 2 * this.distAllElSync),
-                    new ScrollBar(Images.ImagesBackgroundTemplate.getName(),Images.ImagesWhiteBackground.getName()),true,
-                    0xFFFF0B,
-                    selectConfiguration.widthOfShowingSpace, selectConfiguration.heightOfShowingSpace);
-                this.scroller = new Scroll(this.game, this.initArray(selectConfiguration), this.scrollConfiguration);
+                        this.groupOfSelect.x + this.distAllElSync,
+                        this.groupOfSelect.y + this.groupOfSelect.height - this.distAllElSync),
+                    new ScrollBar(Images.ImagesBackgroundTemplate.getName(),Images.ImagesInputBorderColor.getName()),true,
+                    0xFFFFFF,
+                    selectConfiguration.width + selectConfiguration.fontAndOtherSize - this.widthScrollBar + 2 * this.distAllElSync,
+                    selectConfiguration.heightOfShowingSpace, selectConfiguration.fontAndOtherSize,
+                    false , this.selectedText);
+                this.scroller = new Scroll(this.game, this.initArray(selectConfiguration),
+                    this.scrollConfiguration);
                 this.scroller.visible = false;
             }
 
-            private initArray(configuration : SelectConfiguration) : Phaser.Group[] {
+            private initArray(configuration : SelectConfiguration) : SelectorItem[] {
                 let selectItems = [];
                 for (let i = 0; i < configuration.label.length; i++) {
-                    const selItem = new SelectorItem(this.game, configuration.label[i], {fontSize : configuration.fontAndOtherSize},this.selectedText);
-                    selItem.position.setTo( 0, (30 + selItem.height) * i);
+                    const selectItem = new SelectorItem(
+                        this.game, configuration.label[i],
+                        configuration.values[i],
+                        {fontSize : configuration.fontAndOtherSize}, this.selectedText,
+                        configuration.width + configuration.fontAndOtherSize
+                    );
+                    selectItem.position.setTo( 0, selectItem.height * i);
                     // 50 for distance all elements
-                    selItem.onClick.add(this.changeLabel, this);
-                    selectItems.push(selItem);
+                    selectItems.push(selectItem);
                 }
                 return selectItems;
             }
 
-            private changeLabel(labelText: string): void {
-                this.selectedText.text = labelText;
-            }
         }
     }
 }

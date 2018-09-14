@@ -250,8 +250,8 @@ export namespace DC {
             protected initText() : void {
                 this.textInput = this.game.add.text( 2 * this.distAllElSync,
                     this.spriteInpArea.worldPosition.y + 2 * this.distAllElSync,
-                    '', {fontSize: this.configuration.size}, this.inputGroup);
-                            //this.lineEndY - this.lineStartY
+                    this.configuration.textValue,
+                    {fontSize: this.configuration.size}, this.inputGroup);
                 if (this.configuration.placeHolderValue != '') {
                     this.placeHolder = this.game.add.text(2 * this.distAllElSync,
                         this.spriteInpArea.worldPosition.y + 2 * this.distAllElSync,
@@ -262,11 +262,14 @@ export namespace DC {
                     if (this.textInput.text.length > 0) {
                         this.placeHolder.visible = false;
                     }
+                    this.placeHolder.y = this.line.y;
                 }
                 this.textFocusing = this.game.add.text(2 * this.distAllElSync,
                     this.spriteInpArea.worldPosition.y + 2 * this.distAllElSync,
-                    '', {fontSize: this.configuration.size}, this.inputGroup);
+                    this.configuration.textValue,
+                    {fontSize: this.configuration.size}, this.inputGroup);
 
+                this.textFocusing.y = this.textInput.y = this.line.y;
 
                 this.textFocusing.visible = false;
 
@@ -315,12 +318,11 @@ export namespace DC {
                 let initialTextWidth = this.textFocusing.width;
                 this.textFocusing.text = this.textFocusing.text.slice(0,this.linePositionIndex - 1);
                 let finalTextWidth = this.textFocusing.width;
-                if ((this.textFocusing.x + this.textFocusing.width) > this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync ) {
+                if ((this.textFocusing.x + this.textFocusing.width) > (this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync) ) {
                     this.line.x = this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync;
                 } else {
                     this.line.x = this.textFocusing.x + this.textFocusing.width;
                 }
-                //TODO algorithm not done
                 if (this.linePositionIndex > 0) {
                     if (this.line.x <= 2 * this.distAllElSync) {
                         if (this.textFocusing.x < 0) {
@@ -329,7 +331,9 @@ export namespace DC {
                         }else {
                             this.textInput.x = 2 * this.distAllElSync;
                             this.textFocusing.x = 2 * this.distAllElSync;
+
                         }
+                        this.line.x = this.textFocusing.x + this.textFocusing.width;
                     }
                     --this.linePositionIndex;
                 }
@@ -353,9 +357,11 @@ export namespace DC {
                 if (this.linePositionIndex < this.textInput.text.length) {
                     if (this.line.x >= this.textFocusing.x + this.textFocusing.width) {
                         if (this.textFocusing.x + this.textFocusing.width > this.spriteInpArea.x + this.spriteInpArea.width) {
+                            console.log('first if');
                             this.textInput.x += initialTextWidth - finalTextWidth;
                             this.textFocusing.x += initialTextWidth - finalTextWidth;
                         } else {
+                            console.log('first else');
                             if (this.line.x < this.spriteInpArea.x && this.line.x > this.textInput.x + this.textInput.width) {
                                 this.textInput.x = 2 * this.distAllElSync;
                                 this.textFocusing.x = 2 * this.distAllElSync;
@@ -370,8 +376,8 @@ export namespace DC {
                 if (this.game.time.events.paused) {
                     this.line.visible = true;
                     this.initRecreateBlinkTimer();
-
                 }
+
             }
 
             protected enterDown() : void {
@@ -398,6 +404,7 @@ export namespace DC {
                 this.textFocusing.visible = false;
                 let x : number;
                 let i : number;
+                let positioningOneTime = true;
                 //if text out of bounds from input area
                 //61 is count of '.', that can fit in input area
                 // i = this.textInput.text.length >= 61 ? this.textInput.text.length - 61 : 0;
@@ -408,10 +415,18 @@ export namespace DC {
                         this.linePositionIndex = i;
                         console.log("1 if");
                     } else if (this.textInput.x < 2 * this.distAllElSync) {
-                        //TODO x have an other value. This value is not correct and linePositionIndex too
-                        x = this.textFocusing.x + this.textFocusing.width;
-                        this.linePositionIndex = this.textInput.text.length;
-                        console.log("INCORRECT 1 else");
+                        if (this.textFocusing.x + this.textFocusing.width <= inputClickedPos) {
+                            x = this.textInput.x + this.textInput.width;
+                            this.linePositionIndex = this.textInput.text.length;
+                            console.log("1 else");
+                        } else {
+                            if (positioningOneTime) {
+                                positioningOneTime = false;
+                                x = this.textFocusing.x + this.textFocusing.width;
+                                this.linePositionIndex = this.textFocusing.text.length;
+                                break;
+                            }
+                        }
                     }
 
                     // if last position is clicked
@@ -485,14 +500,19 @@ export namespace DC {
                     this.checkDeleteAll();
                     this.game.time.events.pause();
                 this.line.visible = true;
-                initialTextWidth = this.textInput.width;
 
-                this.textInput.text = this.textFocusing.text = [
+                this.textFocusing.text = [
+                    this.textInput.text.slice(0, this.linePositionIndex),
+                    char,
+                ].join('');
+                initialTextWidth = this.textInput.width;
+                    this.textInput.text = [
                     this.textInput.text.slice(0, this.linePositionIndex),
                     char,
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
+                console.log('addKey focus = ' + this.textFocusing.text);
                     if (this.placeHolder != null) {
                         this.placeHolder.visible = this.textInput.text.length == 0;
                     }
@@ -507,14 +527,13 @@ export namespace DC {
                             this.isLineIndexChanged = false;
                         }
                         this.linePositionIndex += 1;
-                        this.line.x += finalTextWidth - initialTextWidth;
+                        this.line.x = this.textFocusing.x + this.textFocusing.width;
                     }
 
                     if (this.line.x >= this.spriteInpArea.width) {
-                        //TODO if you can, add dynamic position from character
-                            this.line.x = this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync;
                             this.textInput.x -= finalTextWidth - initialTextWidth;
                             this.textFocusing.x -= finalTextWidth - initialTextWidth;
+                        this.line.x = this.textFocusing.x + this.textFocusing.width;
                     }
                 this.initRecreateBlinkTimer();
             }
@@ -535,24 +554,22 @@ export namespace DC {
                         this.textInput.text.slice(this.linePositionIndex)
                     ].join('');
 
+                this.textFocusing.text = [
+                    this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
+                ].join('');
+
                 if (this.placeHolder != null) {
                     this.placeHolder.visible = this.textInput.text.length == 0;
                 }
-
+                console.log('delText focus text= ' + this.textFocusing.text);
                 finalTextWidth = this.textInput.width;
 
                 this.linePositionIndex = Math.max(0, --this.linePositionIndex);
 
                 if (this.textInput.width < this.spriteInpArea.width || this.textInput.x >= 0) {
-                    let textXBeforeChange = this.textInput.x;
                     this.textInput.x = this.textFocusing.x = 2 * this.distAllElSync;
 
-                    // this if work for put line in correct x. If you remove this if then position will be wrong
-                    if (this.isLengthBig) {
-                        this.isLengthBig = false;
-                        this.line.x -= textXBeforeChange - this.textInput.x;
-                    }
-                    this.line.x -= initialTextWidth - finalTextWidth;
+                        this.line.x = this.textFocusing.x + this.textFocusing.width;
                 } else {
                     this.isLengthBig = true;
                     this.textInput.x -= finalTextWidth - initialTextWidth;
@@ -617,7 +634,8 @@ export namespace DC {
 
         }
 
-        export class InputNumber extends InputArea{
+        export class InputNumber extends InputArea {
+            //TODO Have a bug with big number length
             private arrowGroup : Phaser.Group;
             private arrowUpNum : Phaser.Sprite;
             private arrowDownNum : Phaser.Sprite;
@@ -695,7 +713,7 @@ export namespace DC {
 
             }
 
-            protected anyKeyPressed(char) : void {
+            protected anyKeyPressed(char : string) : void {
                 if (!this.isFocused) return;
                 let initialTextWidth : number;
                 let finalTextWidth : number;
@@ -703,7 +721,6 @@ export namespace DC {
                 this.game.time.events.pause();
                 this.line.visible = true;
                 initialTextWidth = this.textInput.width;
-
 
                 for (let i = 0; i < 10; i++) {
                     if (char == i.toString() || char == '-' || char == '+') {
@@ -715,7 +732,11 @@ export namespace DC {
                     }
                 }
 
-                this.textInput.text = this.textFocusing.text = [
+                this.textFocusing.text = [
+                    this.textInput.text.slice(0, this.linePositionIndex),
+                    char,
+                ].join('');
+                this.textInput.text = [
                     this.textInput.text.slice(0, this.linePositionIndex),
                     char,
                     this.textInput.text.slice(this.linePositionIndex)
@@ -735,17 +756,15 @@ export namespace DC {
                         this.isLineIndexChanged = false;
                     }
                     this.linePositionIndex += 1;
-                    this.line.x += finalTextWidth - initialTextWidth;
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
                 }
 
                 if (this.line.x >= this.spriteInpArea.width) {
-                    // TODO if you can, add dynamic position from character
-                    this.line.x = this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync;
                     this.textInput.x -= finalTextWidth - initialTextWidth;
                     this.textFocusing.x -= finalTextWidth - initialTextWidth;
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
                 }
                 this.initRecreateBlinkTimer();
-
             }
 
             protected deleteText() : void {
@@ -758,29 +777,27 @@ export namespace DC {
                 initialTextWidth = this.textInput.width;
 
 
+
                 this.textInput.text = this.textFocusing.text = [
                     this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
+                this.textFocusing.text = [
+                    this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
+                ].join('');
+
                 if (this.placeHolder != null) {
                     this.placeHolder.visible = this.textInput.text.length == 0;
                 }
-
                 finalTextWidth = this.textInput.width;
 
                 this.linePositionIndex = Math.max(0, --this.linePositionIndex);
 
                 if (this.textInput.width < this.spriteInpArea.width || this.textInput.x >= 0) {
-                    let textXBeforeChange = this.textInput.x;
                     this.textInput.x = this.textFocusing.x = 2 * this.distAllElSync;
 
-                    // this if work for put line in correct x. If you remove this if then position will be wrong
-                    if (this.isLengthBig) {
-                        this.isLengthBig = false;
-                        this.line.x -= textXBeforeChange - this.textInput.x;
-                    }
-                    this.line.x -= initialTextWidth - finalTextWidth;
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
                 } else {
                     this.isLengthBig = true;
                     this.textInput.x -= finalTextWidth - initialTextWidth;
@@ -939,7 +956,9 @@ export namespace DC {
                 //     }
                 //
                 // }
-                this.textInput.x = this.textFocusing.x = 2 * this.distAllElSync;
+                if(this.textInput.x >= 0) {
+                    this.textInput.x = this.textFocusing.x = 2 * this.distAllElSync;
+                }
                 this.linePositionIndex = this.textFocusing.text.length;
                 this.line.x = this.textFocusing.x + this.textFocusing.width;
             }
@@ -974,16 +993,20 @@ export namespace DC {
                     char,
                     this.textValue.slice(this.linePositionIndex)
                 ].join('');
-                console.log(this.textValue)
+                console.log(this.textValue);
                 char = '•';
 
-
-                this.textInput.text = this.textFocusing.text = [
+                this.textFocusing.text = [
+                    this.textInput.text.slice(0, this.linePositionIndex),
+                    char,
+                ].join('');
+                this.textInput.text = [
                     this.textInput.text.slice(0, this.linePositionIndex),
                     char,
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
+                console.log('addKey focus = ' + this.textFocusing.text);
                 if (this.placeHolder != null) {
                     this.placeHolder.visible = this.textInput.text.length == 0;
                 }
@@ -998,14 +1021,13 @@ export namespace DC {
                         this.isLineIndexChanged = false;
                     }
                     this.linePositionIndex += 1;
-                    this.line.x += finalTextWidth - initialTextWidth;
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
                 }
 
                 if (this.line.x >= this.spriteInpArea.width) {
-                    //TODO if you can, add dynamic position from character
-                    this.line.x = this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync;
                     this.textInput.x -= finalTextWidth - initialTextWidth;
                     this.textFocusing.x -= finalTextWidth - initialTextWidth;
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
                 }
                 this.initRecreateBlinkTimer();
             }
@@ -1019,36 +1041,32 @@ export namespace DC {
                 this.game.time.events.pause();
                 initialTextWidth = this.textInput.width;
 
-
                 this.textValue = [
                     this.textValue.slice(0,  Math.max(0, this.linePositionIndex - 1)),
                     this.textValue.slice(this.linePositionIndex)
                 ].join('');
-                console.log("textVal = " + this.textValue);
+
 
                 this.textInput.text = this.textFocusing.text = [
                     this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
+                this.textFocusing.text = [
+                    this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
+                ].join('');
+
                 if (this.placeHolder != null) {
                     this.placeHolder.visible = this.textInput.text.length == 0;
                 }
-
                 finalTextWidth = this.textInput.width;
 
                 this.linePositionIndex = Math.max(0, --this.linePositionIndex);
 
                 if (this.textInput.width < this.spriteInpArea.width || this.textInput.x >= 0) {
-                    let textXBeforeChange = this.textInput.x;
                     this.textInput.x = this.textFocusing.x = 2 * this.distAllElSync;
 
-                    // this if work for put line in correct x. If you remove this if then position will be wrong
-                    if (this.isLengthBig) {
-                        this.isLengthBig = false;
-                        this.line.x -= textXBeforeChange - this.textInput.x;
-                    }
-                    this.line.x -= initialTextWidth - finalTextWidth;
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
                 } else {
                     this.isLengthBig = true;
                     this.textInput.x -= finalTextWidth - initialTextWidth;
@@ -1085,8 +1103,6 @@ export namespace DC {
                 this.initSelectedText(configuration);
                 this.initMask(this.groupOfSelect.x, this.groupOfSelect.y, this.selectorArea.width, this.selectorArea.height,this.selectedText);
                 this.initScroller(configuration);
-
-
                 this.initEvents();
             }
 
@@ -1144,8 +1160,11 @@ export namespace DC {
 
             private initSelectedText(configuration : SelectConfiguration) : void {
                 this.selectedText = this.game.add.text(2 * this.distAllElSync, this.selectorArea.worldPosition.y + 2 * this.distAllElSync,
-                    configuration.label[configuration.byDefault],
+                     configuration.label[configuration.byDefault],
                     {fontSize: configuration.fontAndOtherSize},this.groupOfSelect);
+                // this.selectedText.text = this.selectedText.width > this.selectorArea.width
+                //     ? this.selectedText.text.slice(0,this.selectedText.text.length - 3)
+                //     : this.selectedText.text
                 this.selectedText.y =  2 * this.distAllElSync + this.selectorArea.height / 2 - this.selectedText.height / 2;
             }
 
@@ -1191,14 +1210,24 @@ export namespace DC {
             private initScroller(selectConfiguration : SelectConfiguration) {
                 this.scrollConfiguration = new ScrollConfiguration(
                     selectConfiguration.width + selectConfiguration.fontAndOtherSize - this.widthScrollBar - 2 * this.distAllElSync,
-                    this.widthScrollBar, new Phaser.Point(
+                    this.widthScrollBar, new Phaser.Point
+                    (
                         this.groupOfSelect.x + this.distAllElSync,
-                        this.groupOfSelect.y + this.groupOfSelect.height - this.distAllElSync),
-                    new ScrollBar(Images.ImagesBackgroundTemplate.getName(),Images.ImagesInputBorderColor.getName()),true,
+                        this.groupOfSelect.y + this.groupOfSelect.height - this.distAllElSync
+                    ),
+                    new ScrollBar(
+                        Images.ImagesBackgroundTemplate.getName(),
+                        Images.ImagesInputBorderColor.getName()
+                    ),
+                    true,
                     0xFFFFFF,
                     selectConfiguration.width + selectConfiguration.fontAndOtherSize - this.widthScrollBar + 2 * this.distAllElSync,
-                    selectConfiguration.heightOfShowingSpace, selectConfiguration.fontAndOtherSize,
-                    false , this.selectedText);
+                    selectConfiguration.heightOfShowingSpace,
+                    selectConfiguration.fontAndOtherSize,
+                    false,
+                    this.selectedText,
+                    this.selectorArea.width
+                );
                 this.scroller = new Scroll(this.game, this.initArray(selectConfiguration),
                     this.scrollConfiguration);
                 this.scroller.visible = false;

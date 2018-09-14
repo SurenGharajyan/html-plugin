@@ -31,7 +31,7 @@ export class GameScreen extends Phaser.Group {
 
     private initCheckBox(g : Phaser.Game) : void {
         //CheckBox
-        let chBoxParameters = new CheckBoxParameters(350,100);
+        let chBoxParameters = new CheckBoxParameters(300,100);
         let chBoxConfiguration = new CheckBoxConfiguration(50,50,
             new LabelConfiguration("CheckBox Example",{font: 'Arial Black', fontSize: 17, fontWeight: 'bold'}),
             Images.ImagesUnchecked.getName(),
@@ -43,7 +43,7 @@ export class GameScreen extends Phaser.Group {
     private initInput(g : Phaser.Game) : void {
         //Input
         let inputParameters = new InputParameters(300,200);
-        let inputConfiguration = new InputConfiguration(300,30,650,18,
+        let inputConfiguration = new InputConfiguration(200,30,650,18,
             '','',InputType.TEXT);
 
         let input;
@@ -63,7 +63,7 @@ export class GameScreen extends Phaser.Group {
     private initRadioButtons(g : Phaser.Game) {
         //RadioButtons
         //by default distance is 50
-        const radioParameters = new RadioParameters(650,50,70);
+        const radioParameters = new RadioParameters(600,200,70);
         const radioConfiguration = new RadioConfiguration(50,50,1,1,['Milk','Meat','Bread','Egg','etc'],
             Images.ImagesRadiobtnUnchecked.getName(), Images.ImagesRadiobtnChecked.getName(),
             {font: 'Arial Black', fontSize: 17, fontWeight: 'bold'},false,2);
@@ -73,14 +73,15 @@ export class GameScreen extends Phaser.Group {
 
     private initSelectPlugin(g : Phaser.Game) {
         const selectParam = new SelectParameters(50,100);
-        //fontAndOtherSize is lower then height with 10
-        const selectConfig = new SelectConfiguration(150,32,
-            ['McLaren is a best car','Mercedes-Benz is a car','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
-            // ['Petrosyan','Movsisyan','Baghdasaryan','Karapetyan','Levonyan','Khachatyan','Sevoyan'],
-            ['McL Value',"Mers Value","Lambo Value","BMW Value", "Opel Value", "Mitsubishi Value", "Nissan Value", "Kia Value", "Ford Value", "Peugeot Value"],
-
-            25,200,1);
-
+        const selectConfig = new SelectConfiguration
+        (
+            160,32,
+            // ['McLaren','Mercedes-Benz','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
+            ['Petrosyan','Movsisyan','Baghdasaryan','Karapetyan','Levonyan','Khachatyan','Sevoyan'],
+            // ["Restaurant country", 'Restaurant city', 'Restaurant street', 'Restaurant complement', 'Restaurant state', 'Restaurant neighborhood', 'Restaurant number', 'Restaurant zip code'],
+            ['McL Value',"Mers Value","Lamborg Value","BMW Value", "Opel Value", "Mitsubishi Value", "Nissan Value", "Kia Value", "Ford Value", "Peugeot Value"],
+            25,200,1
+        );
         const selectPg = new DC.Input.SelectPlugin(g, selectParam, selectConfig);
     }
 

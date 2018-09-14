@@ -1,6 +1,21 @@
 import {ScrollBar} from "./ScrollBar";
 
 export class ScrollConfiguration {
+    get scrollBarPos(): number {
+        return this._scrollBarPos;
+    }
+
+    set scrollBarPos(value: number) {
+        this._scrollBarPos = value;
+    }
+
+    get selectAreaWidth(): number {
+        return this._selectAreaWidth;
+    }
+
+    set selectAreaWidth(value: number) {
+        this._selectAreaWidth = value;
+    }
 
     private readonly _widthGroup : number;
     private readonly _widthScrollBar : number;
@@ -14,9 +29,11 @@ export class ScrollConfiguration {
     private _isEnableClickOnMask : boolean;
     private _selectedText : Phaser.Text;
     private _textSize : number;
+    private _selectAreaWidth : number;
 
     constructor(widthGroup: number, widthScrollBar: number, position: Phaser.Point, scrollSrc: ScrollBar, arrowsEnabled: boolean,
-                backgroundColor: number, maskWidth: number, maskHeight : number,textSize, isEnableClickOnMask : boolean, selectedText : Phaser.Text) {
+                backgroundColor: number, maskWidth: number, maskHeight : number,textSize, isEnableClickOnMask : boolean, selectedText : Phaser.Text
+                ,selectAreaWidth : number) {
         this._widthGroup = widthGroup;
         this._widthScrollBar = widthScrollBar;
 
@@ -29,6 +46,7 @@ export class ScrollConfiguration {
         this._isEnableClickOnMask = isEnableClickOnMask;
         this._selectedText = selectedText;
         this._textSize = textSize;
+        this.selectAreaWidth = selectAreaWidth
     }
 
     get widthGroup(): number {

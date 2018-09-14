@@ -47,7 +47,7 @@ export class Scroll extends Phaser.Group {
         this.initBackground();
         for (let i = 0; i < elements.length ; i++) {
             this.element = elements[i];
-            this.element.onChildInputDown.add(this.onChildClicked.bind(this,this.element,configuration.selectedText),this);
+            this.element.onChildInputDown.add(this.onChildClicked.bind(this,this.element,configuration),this);
             this.element.onChildInputOver.add(this.onChildHovered.bind(this,this.element),this);
             this.element.onChildInputOut.add(this.onChildOut.bind(this,this.element),this);
             this.groupOfElements.addChild(this.element);
@@ -63,11 +63,23 @@ export class Scroll extends Phaser.Group {
 
     }
 
-    private onChildClicked(group,selectedText) : void {
+    private onChildClicked(group,configuration : ScrollConfiguration) : void {
         if (this.maskOfElements.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)) {
-            selectedText.text = group.getChildAt(1).text;
+            let textOfSelect = configuration.selectedText.text;
+            textOfSelect = group.getChildAt(1).text;
+            if (textOfSelect.slice(textOfSelect.length - 3, textOfSelect.length) == '...') {
+                textOfSelect = textOfSelect.slice(0, textOfSelect.length - 3);
+            }
+            configuration.selectedText.text = textOfSelect;
+            configuration.selectedText.text = configuration.selectedText.width > configuration.selectAreaWidth
+                ? configuration.selectedText.text.slice(0,configuration.selectedText.text.length - 3) + '...'
+                : group.getChildAt(1).text;
+
+            group.getChildAt(0).tint = 0xffffff;
+            group.getChildAt(1).fill = '#000000';
             console.log('the value of text = ' + group.value);
         }
+        this.visible = false;
     }
 
     private onChildHovered(groupText) : void {

@@ -1,16 +1,5 @@
 import {DC} from "../Elements/htmlPlugin";
-import {CheckBoxConfiguration} from "../Elements/CheckBox/CheckBoxConfiguration";
-import {CheckBoxParameters} from "../Elements/CheckBox/CheckBoxParameters";
-import {Images} from "../../assets";
-import {LabelConfiguration} from "../Elements/CheckBox/LabelConfiguration";
-import {InputParameters} from "../Elements/Input/InputParameters";
-import {InputConfiguration} from "../Elements/Input/InputConfiguration";
-import {Form} from "../Elements/common/Form";
-import {RadioParameters} from "../Elements/RadioGroup/RadioParameters";
-import {RadioConfiguration} from "../Elements/RadioGroup/RadioConfiguration";
-import {InputType} from "../Elements/Input/InputType";
-import {SelectParameters} from "../Elements/Select/SelectParameters";
-import {SelectConfiguration} from "../Elements/Select/SelectConfiguration";
+import {TextConfigurations} from "../Elements/Select/TextConfigurations";
 
 
 export class GameScreen extends Phaser.Group {
@@ -30,59 +19,43 @@ export class GameScreen extends Phaser.Group {
     }
 
     private initCheckBox(g : Phaser.Game) : void {
-        //CheckBox
-        let chBoxParameters = new CheckBoxParameters(300,100);
-        let chBoxConfiguration = new CheckBoxConfiguration(50,50,
-            new LabelConfiguration("CheckBox Example",{font: 'Arial Black', fontSize: 17, fontWeight: 'bold'}),
-            Images.ImagesUnchecked.getName(),
-            Images.ImagesChecked.getName(),new Form(true));
-
-        const checkBox = new DC.Input.CheckBox(g,chBoxParameters,chBoxConfiguration);
+        const checkBox = new DC.Input.CheckBox(g, {
+            x : 500,
+            y : 20,
+        });
     }
 
     private initInput(g : Phaser.Game) : void {
-        //Input
-        let inputParameters = new InputParameters(300,200);
-        let inputConfiguration = new InputConfiguration(200,30,650,18,
-            '','',InputType.TEXT);
-
-        let input;
-        switch (inputConfiguration.inputType) {
-            case InputType.NUMBER :
-                input = new DC.Input.InputNumber(g,inputParameters,inputConfiguration);
-                break;
-            case InputType.TEXT :
-                input = new DC.Input.InputArea(g,inputParameters,inputConfiguration);
-                break;
-            case InputType.PASSWORD:
-                input = new DC.Input.InputPassword(g,inputParameters,inputConfiguration);
-                break;
-        }
+        DC.Input.addInput(g,{
+            x : 100,
+            y : 250,
+        });
     }
 
     private initRadioButtons(g : Phaser.Game) {
-        //RadioButtons
-        //by default distance is 50
-        const radioParameters = new RadioParameters(600,200,70);
-        const radioConfiguration = new RadioConfiguration(50,50,1,1,['Milk','Meat','Bread','Egg','etc'],
-            Images.ImagesRadiobtnUnchecked.getName(), Images.ImagesRadiobtnChecked.getName(),
-            {font: 'Arial Black', fontSize: 17, fontWeight: 'bold'},false,2);
-
-        const radioGroup = new DC.Input.RadioGroupButton(g, radioParameters, radioConfiguration);
+        const radioGroup = new DC.Input.RadioGroupButton(g, {
+            x : 500,
+            y : 350
+        });
     }
 
     private initSelectPlugin(g : Phaser.Game) {
-        const selectParam = new SelectParameters(50,100);
-        const selectConfig = new SelectConfiguration
-        (
-            160,32,
-            // ['McLaren','Mercedes-Benz','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
-            ['Petrosyan','Movsisyan','Baghdasaryan','Karapetyan','Levonyan','Khachatyan','Sevoyan'],
-            // ["Restaurant country", 'Restaurant city', 'Restaurant street', 'Restaurant complement', 'Restaurant state', 'Restaurant neighborhood', 'Restaurant number', 'Restaurant zip code'],
-            ['McL Value',"Mers Value","Lamborg Value","BMW Value", "Opel Value", "Mitsubishi Value", "Nissan Value", "Kia Value", "Ford Value", "Peugeot Value"],
-            25,200,1
-        );
-        const selectPg = new DC.Input.SelectPlugin(g, selectParam, selectConfig);
+        const selectPg = new DC.Input.SelectPlugin(g,{
+
+            x: 200,
+            y: 100,
+            width: 500,
+            textConfiguration : new TextConfigurations(
+                ['McLaren','Mercedes-Benz','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
+                ["McLaren value", 'Mercedes-Benz value', 'Lamborghini value', 'BMW value',
+                'Opel value','Mitsubishi value', 'Nissan value','Kia value','Ford value','Peugeot value']
+                ),
+            //label : ['McLaren','Mercedes-Benz','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
+            // ["Restaurant country", 'Restaurant city', 'Restaurant street', 'Restaurant complement',
+            // 'Restaurant state', 'Restaurant neighborhood', 'Restaurant number', 'Restaurant zip code'],
+            heightOfShowingSpace : 100,
+            byDefault : 4
+        });
     }
 
 }

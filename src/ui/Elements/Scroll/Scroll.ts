@@ -65,8 +65,7 @@ export class Scroll extends Phaser.Group {
 
     private onChildClicked(group,configuration : ScrollConfiguration) : void {
         if (this.maskOfElements.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)) {
-            let textOfSelect = configuration.selectedText.text;
-            textOfSelect = group.getChildAt(1).text;
+            let textOfSelect = group.getChildAt(1).text;
             if (textOfSelect.slice(textOfSelect.length - 3, textOfSelect.length) == '...') {
                 textOfSelect = textOfSelect.slice(0, textOfSelect.length - 3);
             }

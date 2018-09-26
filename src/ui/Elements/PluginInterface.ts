@@ -4,11 +4,13 @@ import {InputType} from "./Input/enums/InputType";
 import {TextConfigurations} from "./Select/TextConfigurations";
 import {Parameters} from "./common/Parameters";
 import {Configuration} from "./common/Configuration";
+import {ScrollBar} from "./Scroll/ScrollBar";
 
 export namespace PluginInterfaces {
 
     export interface CheckBoxConfigurations extends Parameters, Configuration {
         label?: LabelConfiguration,
+        labelClick?: boolean,
         background?: string,
         foreground?: string,
         form? : Form
@@ -39,5 +41,16 @@ export namespace PluginInterfaces {
         byDefault?: number;
     }
 
-
+    export interface ScrollConfigurations {
+        widthGroup?: number;
+        widthScrollBar?: number;
+        position?: Phaser.Point;
+        scrollSrc?: ScrollBar;
+        arrowsEnabled?: boolean;
+        backgroundColor?: number;
+        maskHeight?: number;
+        isEnableClickOnMask?: boolean;
+        selectedText?: Phaser.Text;
+        selectAreaWidth?: number;
+    }
 }

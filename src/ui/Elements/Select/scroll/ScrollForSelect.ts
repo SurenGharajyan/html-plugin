@@ -1,9 +1,9 @@
 import Color = Phaser.Color;
-import {Images} from '../../../assets';
-import {ScrollConfiguration} from "./ScrollConfiguration";
-import {ScrollBar} from "./ScrollBar";
+import {Images} from '../../../../assets';
+import {SelectScrollConfiguration} from "./SelectScrollConfiguration";
+import {ScrollBar} from "../../Scroll/ScrollBar"; import {SelectorItem} from "../SelectorItem";
 
-export class Scroll extends Phaser.Group {
+export class ScrollForSelect extends Phaser.Group {
     private groupOfElements : Phaser.Group;
     private groupScrollBtn : Phaser.Group;
     private element : Phaser.Group;
@@ -21,52 +21,97 @@ export class Scroll extends Phaser.Group {
     private mouseLastPos : number = 0;
     private mouseOldY : number = 0;
     private percent : number = 0;
+    private bgGraphic : Phaser.Graphics;
 
-    constructor(g, array : Phaser.Group[], config : ScrollConfiguration) {
+    constructor(g, array : SelectorItem[], configuration : SelectScrollConfiguration) {
         super(g);
-        this.init(array,config);
+        this.init(array, configuration);
     }
 
-    private init(arr : Phaser.Group[], config : ScrollConfiguration) : void {
-        this.initElements(arr,config);
-        this.initScrollSystem(config);
+    private init(arr : SelectorItem[], configuration : SelectScrollConfiguration) : void {
+        this.initElements(arr,configuration);
+        this.initScrollSystem(configuration);
         this.attachListeners();
     }
-
-    private initElements(elements : Phaser.Group[], config : ScrollConfiguration) : void {
-        this.groupOfElements = this.game.add.group();
-        this.groupOfElements.scale.set(0.5);
+// new method
+    private initBackground() : void {
+        this.bgGraphic = this.game.add.graphics(0,0,this.groupOfElements);
+    }
+//initElements is different from original
+    private initElements(elements : SelectorItem[], configuration : SelectScrollConfiguration) : void {
+        this.groupOfElements = this.game.add.group(this);
+        // this.groupOfElements.scale.set(0.5);
+        this.initBackground();
         for (let i = 0; i < elements.length ; i++) {
             this.element = elements[i];
-            this.groupOfElements.addChild(this.game.add.text( this.element.width + 10,
-                (this.element.centerY), (i + 1) + ''));
+            this.element.onChildInputDown.add(this.onChildClicked.bind(this,this.element,configuration),this);
+            this.element.onChildInputOver.add(this.onChildHovered.bind(this,this.element),this);
+            this.element.onChildInputOut.add(this.onChildOut.bind(this,this.element),this);
             this.groupOfElements.addChild(this.element);
         }
-        this.groupOfElements.x = config.position.x;
-        this.initMask(config.position.y);
+        this.groupOfElements.x = configuration.position.x;
+        this.initMask(configuration);
+        this.bgGraphic.beginFill(configuration.backgroundColor,1);
+        this.bgGraphic.drawRect(0,0,this.groupOfElements.width,this.groupOfElements.height);
+        this.bgGraphic.endFill();
         this.groupOfElements.y = this.maskOfElements.y;
-        this.groupOfElements.width = config.widthGroup;
-    }
+        this.groupOfElements.width = configuration.widthGroup;
 
-    private initMask(y : number) : void {
-        //CHANGE VALUE CUSTOM HERE
-        this.maskYPos = y;
-        this.maskHeight = this.game.world.centerY + 2 * this.game.world.centerY/3;
+
+    }
+//new method
+    private onChildClicked(group, configuration : SelectScrollConfiguration) : void {
+        if (this.maskOfElements.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)) {
+            let textOfSelect = group.getChildAt(1).text;
+            if (textOfSelect.slice(textOfSelect.length - 3, textOfSelect.length) == '...') {
+                textOfSelect = textOfSelect.slice(0, textOfSelect.length - 3);
+            }
+            configuration.selectedText.text = textOfSelect;
+            configuration.selectedText.text = configuration.selectedText.width > configuration.selectAreaWidth
+                ? configuration.selectedText.text.slice(0,configuration.selectedText.text.length - 3) + '...'
+                : group.getChildAt(1).text;
+
+            group.getChildAt(0).tint = 0xffffff;
+            group.getChildAt(1).fill = '#000000';
+            console.log('the value of text = ' + group.value);
+        }
+        this.visible = false;
+    }
+//new method
+    private onChildHovered(groupText) : void {
+        if (this.groupOfElements.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)
+            // this.maskOfElements.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)
+    ) {
+            groupText.getChildAt(0).tint = 0x000fff;
+            groupText.getChildAt(1).fill = '#ffffff';
+        }
+    }
+//new method
+    private onChildOut(groupText) : void {
+        groupText.getChildAt(0).tint = 0xffffff;
+        groupText.getChildAt(1).fill = '#000000';
+    }
+//init mask changed
+    private initMask(configuration : SelectScrollConfiguration) : void {
+        this.maskYPos = configuration.position.y;
+        this.maskHeight = configuration.maskHeight;
 
         this.maskOfElements = this.game.add.graphics(this.groupOfElements.x, this.maskYPos,this);
         this.maskOfElements.beginFill(Color.AQUA);
         this.maskOfElements.drawRect(0,0,
-            this.groupOfElements.width + 10, this.maskHeight );
+            configuration.widthGroup, this.maskHeight );
         this.maskOfElements.endFill();
         this.groupOfElements.mask = this.maskOfElements;
-        this.maskOfElements.inputEnabled = true;
-        this.maskOfElements.events.onInputDown.add(this.maskClick, this);
-        this.maskOfElements.events.onInputUp.add(this.maskUp, this);
+        if (configuration.isEnableClickOnMask) {
+            this.maskOfElements.inputEnabled = true;
+            this.maskOfElements.events.onInputDown.add(this.maskClick, this);
+            this.maskOfElements.events.onInputUp.add(this.maskUp, this);
+        }
     }
 
-    private initScrollSystem(config : ScrollConfiguration) : void {
-        this.scrollGroup = this.game.add.group();
-        this.scrollGroup.x = this.groupOfElements.x + this.groupOfElements.width + 10;
+    private initScrollSystem(config : SelectScrollConfiguration) : void {
+        this.scrollGroup = this.game.add.group(this);
+        this.scrollGroup.x = this.groupOfElements.x + config.widthGroup;
         this.scrollGroup.y = 0;
 
         this.scrollUp = this.game.add.sprite(0,0,Images.ImagesUp.getName());
@@ -256,4 +301,5 @@ export class Scroll extends Phaser.Group {
             this.mouseLastPos = this.groupOfElements.y;
         }
     }
+
 }

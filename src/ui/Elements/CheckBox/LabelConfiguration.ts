@@ -1,10 +1,10 @@
 export class LabelConfiguration {
-    private _value : string = '';
-    private _width : number = 0;
-    private _height : number = 0;
-    private _style : Phaser.PhaserTextStyle = {};
+    private _value: string = '';
+    private _width: number = 0;
+    private _height: number = 0;
+    private _style: Phaser.PhaserTextStyle = {};
 
-    constructor(value : string, style?: Phaser.PhaserTextStyle, width?: number, height?: number) {
+    constructor(value: string, style?: Phaser.PhaserTextStyle, width?: number, height?: number) {
         this._value = value;
         this._width = width;
         this._height = height;

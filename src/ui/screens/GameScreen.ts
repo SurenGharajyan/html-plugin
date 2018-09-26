@@ -1,5 +1,6 @@
 import {DC} from "../Elements/htmlPlugin";
 import {TextConfigurations} from "../Elements/Select/TextConfigurations";
+import {InputType} from "../Elements/Input/enums/InputType";
 
 
 export class GameScreen extends Phaser.Group {
@@ -29,22 +30,22 @@ export class GameScreen extends Phaser.Group {
         DC.Input.addInput(g,{
             x : 100,
             y : 250,
+            width: 400,
+            inputType: InputType.NUMBER
         });
     }
 
-    private initRadioButtons(g : Phaser.Game) {
+    private initRadioButtons(g : Phaser.Game) : void {
         const radioGroup = new DC.Input.RadioGroupButton(g, {
             x : 500,
             y : 350
         });
     }
 
-    private initSelectPlugin(g : Phaser.Game) {
+    private initSelectPlugin(g : Phaser.Game) : void {
         const selectPg = new DC.Input.SelectPlugin(g,{
-
             x: 200,
             y: 100,
-            width: 500,
             textConfiguration : new TextConfigurations(
                 ['McLaren','Mercedes-Benz','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
                 ["McLaren value", 'Mercedes-Benz value', 'Lamborghini value', 'BMW value',

@@ -1,17 +1,19 @@
 import {Images} from '../../assets';
-import {ScrollConfiguration} from './Scroll/ScrollConfiguration';
+import {SelectScrollConfiguration} from './Select/scroll/SelectScrollConfiguration';
 import {ScrollBar} from './Scroll/ScrollBar';
-import {Scroll} from './Scroll/Scroll';
+import {ScrollForSelect} from './Select/scroll/ScrollForSelect';
 import {SelectorItem} from './Select/SelectorItem';
 import {InputType} from './Input/enums/InputType';
 import {LabelConfiguration} from './CheckBox/LabelConfiguration';
 import {Form} from './common/Form';
 import {PluginInterfaces} from './PluginInterface';
+import {TextConfigurations} from './Select/TextConfigurations';
+import {KeyboardManager} from './keyboard/KeyboardManager';
+import {KeyboardAction} from './Input/enums/KeyboardAction';
 import SelectConfigurations = PluginInterfaces.SelectConfigurations;
 import CheckBoxConfigurations = PluginInterfaces.CheckBoxConfigurations;
 import RadioGroupConfigurations = PluginInterfaces.RadioGroupConfigurations;
 import InputConfigurations = PluginInterfaces.InputConfigurations;
-import {TextConfigurations} from './Select/TextConfigurations';
 
 export namespace DC {
     export namespace Input {
@@ -21,21 +23,23 @@ export namespace DC {
             private checkBoxBackGround: Phaser.Sprite;
             private checkBoxImage: Phaser.Sprite;
             private checkBoxImageGroup: Phaser.Group;
-            private readonly checkBoxSetting : any;
-            constructor(g : Phaser.Game, checkBoxConfigurations? : CheckBoxConfigurations) {
+            private readonly checkBoxSetting: any;
+
+            constructor(g: Phaser.Game, checkBoxConfigurations?: CheckBoxConfigurations) {
                 super(g);
-                const checkBoxDefault : CheckBoxConfigurations = {
+                const checkBoxDefault: CheckBoxConfigurations = {
                     x: 0,
-                    y : 0,
+                    y: 0,
                     width: 40,
                     height: 40,
                     label: new LabelConfiguration('CheckBox Example',
                         {font: 'Arial Black', fontSize: 17, fontWeight: 'bold'}),
                     background: Images.ImagesUnchecked.getName(),
                     foreground: Images.ImagesChecked.getName(),
-                    form : new Form(false)
+                    labelClick: false,
+                    form: new Form(false)
                 };
-                this.checkBoxSetting = Object.assign({}, checkBoxDefault, checkBoxConfigurations );
+                this.checkBoxSetting = Object.assign({}, checkBoxDefault, checkBoxConfigurations);
                 this.init();
             }
 
@@ -57,7 +61,7 @@ export namespace DC {
             }
 
             private initChBoxText(): void {
-                if(!this.checkBoxSetting.label) return;
+                if (!this.checkBoxSetting.label) return;
                 this.checkBoxText = this.game.add.text(
                     0, 0, this.checkBoxSetting.label.value, this.checkBoxSetting.label.style, this.checkBoxImageGroup
                 );
@@ -85,7 +89,13 @@ export namespace DC {
             }
 
             private initEvents(): void {
-                this.checkBoxBackGround.events.onInputDown.add(this.chBoxStatus.bind(this, this.checkBoxSetting), this)
+                this.checkBoxBackGround.events.onInputDown.add(this.chBoxStatus.bind(this, this.checkBoxSetting), this);
+                if (this.checkBoxSetting.labelClick) {
+                    this.checkBoxText.events.onInputDown.add(this.chBoxStatus.bind(this, this.checkBoxSetting), this);
+                    this.checkBoxText.inputEnabled = true;
+
+                }
+
             }
 
             private chBoxStatus(): void {
@@ -98,41 +108,41 @@ export namespace DC {
         }
 
         export class RadioGroupButton extends Phaser.Group {
-            private _selected : number;
+            private _selected: number;
             private radioButtonPGroup: Phaser.Group;
-            private radioButtonText : Phaser.Text;
-            private radioButtonBackground : Phaser.Sprite;
-            private radioButtonForeground : Phaser.Sprite;
-            private radioButtonsUnchecked : Phaser.Sprite[] = [];
-            private radioButtonsChecked : Phaser.Sprite[] = [];
-            private readonly radioButtonsSetting : any;
+            private radioButtonText: Phaser.Text;
+            private radioButtonBackground: Phaser.Sprite;
+            private radioButtonForeground: Phaser.Sprite;
+            private radioButtonsUnchecked: Phaser.Sprite[] = [];
+            private radioButtonsChecked: Phaser.Sprite[] = [];
+            private readonly radioButtonsSetting: any;
 
-            constructor(g : Phaser.Game, radioGroupConfigurations? : RadioGroupConfigurations) {
+            constructor(g: Phaser.Game, radioGroupConfigurations?: RadioGroupConfigurations) {
                 super(g);
-                const radioDefault : RadioGroupConfigurations = {
+                const radioDefault: RadioGroupConfigurations = {
                     x: 0,
-                    y : 0,
-                    distanceBetween : 70,
+                    y: 0,
+                    distanceBetween: 70,
                     width: 50,
                     height: 50,
-                    label: ['',''],
+                    label: ['', ''],
                     background: Images.ImagesRadiobtnUnchecked.getName(),
-                    foreground:  Images.ImagesRadiobtnChecked.getName(),
+                    foreground: Images.ImagesRadiobtnChecked.getName(),
                     textStyle: {font: 'Arial Black', fontSize: 17, fontWeight: 'bold'},
                     byDefChecked: null
                 };
-                this.radioButtonsSetting = Object.assign({}, radioDefault, radioGroupConfigurations );
+                this.radioButtonsSetting = Object.assign({}, radioDefault, radioGroupConfigurations);
                 this.init();
             }
 
-            private init() : void {
+            private init(): void {
                 this.initRadioButtonGroup();
                 this.initEvents();
                 this.selected = this.radioButtonsSetting.byDefChecked;
             }
 
             private initRadioButtonGroup() {
-                if(this.radioButtonsSetting.label.length != 0) {
+                if (this.radioButtonsSetting.label.length != 0) {
                     for (let i = 0; i < this.radioButtonsSetting.label.length; i++) {
                         this.radioButtonPGroup = this.game.add.group(this);
                         this.radioButtonPGroup.x = this.radioButtonsSetting.x;
@@ -144,7 +154,7 @@ export namespace DC {
                 }
             }
 
-            private initRadioButtonText(index? : number): void {
+            private initRadioButtonText(index?: number): void {
                 this.radioButtonText = this.game.add.text(
                     0, 0, this.radioButtonsSetting.label[index], this.radioButtonsSetting.textStyle, this.radioButtonPGroup
                 );
@@ -154,7 +164,7 @@ export namespace DC {
                 this.radioButtonText.y = chBoxY;
             }
 
-            private initRadioButtonImg(index : number) {
+            private initRadioButtonImg(index: number) {
                 this.radioButtonBackground = this.game.add.sprite(0, 0, this.radioButtonsSetting.background,
                     null, this.radioButtonPGroup);
                 this.radioButtonBackground.width = this.radioButtonsSetting.width;
@@ -181,8 +191,8 @@ export namespace DC {
 
             }
 
-            private radioButtonStatus(radioButtonBackground : Phaser.Sprite) : void {
-                for (let i = 0; i < this.radioButtonsSetting.label.length ; i++) {
+            private radioButtonStatus(radioButtonBackground: Phaser.Sprite): void {
+                for (let i = 0; i < this.radioButtonsSetting.label.length; i++) {
                     if (this.radioButtonsUnchecked[i] == radioButtonBackground) {
                         this.selected = i;
                         this.radioButtonsChecked[i].visible = true;
@@ -192,48 +202,48 @@ export namespace DC {
                 }
             }
 
-            public set selected(i : number) {
+            public set selected(i: number) {
                 this._selected = i;
             }
 
-            public get selected() : number {
+            public get selected(): number {
                 return this._selected;
             }
         }
 
         export class InputArea extends Phaser.Group {
-            protected inputGroup : Phaser.Group;
-            protected spriteBorder : Phaser.Sprite;
-            protected spriteInpArea : Phaser.Sprite;
-            protected line : Phaser.Graphics;
-            protected maskTxt : Phaser.Graphics;
-            protected textInput : Phaser.Text;
-            protected textFocusing : Phaser.Text;
-            protected placeHolder : Phaser.Text;
-            protected backSpaceKey : Phaser.Key;
-            protected leftKey : Phaser.Key;
-            protected rightKey : Phaser.Key;
-            protected enterKey : Phaser.Key;
-            protected timeBlink : Phaser.TimerEvent;
+            protected inputGroup: Phaser.Group;
+            protected spriteBorder: Phaser.Sprite;
+            protected spriteInpArea: Phaser.Sprite;
+            protected line: Phaser.Graphics;
+            protected maskTxt: Phaser.Graphics;
+            protected textInput: Phaser.Text;
+            protected textFocusing: Phaser.Text;
+            protected placeHolder: Phaser.Text;
+            protected backSpaceKey: Phaser.Key;
+            protected leftKey: Phaser.Key;
+            protected rightKey: Phaser.Key;
+            protected enterKey: Phaser.Key;
+            protected timeBlink: Phaser.TimerEvent;
             protected timeStop;
-            protected textValue : string;
-            protected distAllElSync : number;
-            protected longPressWithCount : number = 0;
-            protected linePositionIndex : number = 0;
-            protected isLineIndexChanged : boolean;
-            protected isLengthBig : boolean;
-            protected isFocused : boolean;
-            protected isDoubleClick : boolean;
+            protected textValue: string;
+            protected distAllElSync: number;
+            protected longPressWithCount: number = 0;
+            protected linePositionIndex: number = 0;
+            protected isLineIndexChanged: boolean;
+            protected isLengthBig: boolean;
+            protected isFocused: boolean;
+            protected isDoubleClick: boolean;
+            protected isInputDown: boolean;
+            protected inputConfigurationsInterface: InputConfigurations;
 
-            protected inputConfigurationsInterface : InputConfigurations;
-
-            constructor(g : Phaser.Game, inputConfigurationsInterface? : InputConfigurations) {
+            constructor(g: Phaser.Game, inputConfigurationsInterface?: InputConfigurations) {
                 super(g);
                 this.inputConfigurationsInterface = inputConfigurationsInterface;
                 this.init();
             }
 
-            protected init() : void {
+            protected init(): void {
                 this.initInputGroup();
                 this.initInputSprites();
                 this.initText();
@@ -241,13 +251,13 @@ export namespace DC {
                 this.initEvents();
             }
 
-            protected initInputGroup() : void {
+            protected initInputGroup(): void {
                 this.inputGroup = this.game.add.group(this);
                 this.inputGroup.x = this.inputConfigurationsInterface.x;
                 this.inputGroup.y = this.inputConfigurationsInterface.y;
             }
 
-            protected initInputSprites() : void {
+            protected initInputSprites(): void {
                 this.spriteBorder = this.game.add.sprite(0, 0, Images.ImagesInputBorderColor.getName(),
                     null, this.inputGroup);
                 this.spriteBorder.width = this.inputConfigurationsInterface.width;
@@ -264,8 +274,8 @@ export namespace DC {
 
             }
 
-            protected initText() : void {
-                this.textInput = this.game.add.text( 2 * this.distAllElSync,
+            protected initText(): void {
+                this.textInput = this.game.add.text(2 * this.distAllElSync,
                     this.spriteInpArea.worldPosition.y + 2 * this.distAllElSync,
                     this.inputConfigurationsInterface.value,
                     {fontSize: this.inputConfigurationsInterface.fontSize}, this.inputGroup);
@@ -296,7 +306,7 @@ export namespace DC {
             }
 
             protected initElementPositioning() {
-                if (this.textFocusing.text.length > 0 ) {
+                if (this.textFocusing.text.length > 0) {
                     this.linePositionIndex = this.textFocusing.text.length;
                     this.line.x = this.textFocusing.x + this.textFocusing.width;
                 }
@@ -307,7 +317,7 @@ export namespace DC {
                 }
             }
 
-            protected initMask() : void {
+            protected initMask(): void {
                 this.maskTxt = this.game.add.graphics(this.inputGroup.x, this.inputGroup.y, this);
                 this.maskTxt.beginFill(0x000);
                 this.maskTxt.drawRect(this.distAllElSync, this.distAllElSync, this.spriteInpArea.width, this.spriteInpArea.height);
@@ -315,110 +325,55 @@ export namespace DC {
                 this.maskTxt.endFill();
             }
 
-            protected initEvents() : void {
-                this.game.input.onTap.add(this.onFocusInputArea.bind(this,this.inputConfigurationsInterface), this);
-                this.spriteInpArea.events.onInputDown.add(this.onClickInput, this);
-                this.leftKey = this.game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
-                this.leftKey.onUp.add(this.onUpFewKeys,this);
-                this.leftKey.onDown.add(this.leftDown,this);
-                this.rightKey = this.game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
-                this.rightKey.onUp.add(this.onUpFewKeys,this);
-                this.rightKey.onDown.add(this.rightDown,this);
-                this.enterKey = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-                this.enterKey.onDown.add(this.enterDown,this);
-
+            protected initEvents(): void {
+                this.game.input.onTap.add(this.onFocusInputArea.bind(this, this.inputConfigurationsInterface), this);
+                this.spriteInpArea.events.onInputDown.add(this.onDownInput, this);
+                this.spriteInpArea.events.onInputUp.add(this.onUpInput, this);
+                // this.leftKey = this.game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+                // this.leftKey.onUp.add(this.onUpFewKeys, this);
+                // this.leftKey.onDown.add(this.leftDown, this);
+                // this.rightKey = this.game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+                // this.rightKey.onUp.add(this.onUpFewKeys, this);
+                // this.rightKey.onDown.add(this.rightDown, this);
+                // this.enterKey = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+                // this.enterKey.onDown.add(this.escDown, this);
             }
 
-            protected leftDown() : void {
-                this.isLineIndexChanged = true;
-                this.game.time.events.pause();
-                let initialTextWidth = this.textFocusing.width;
-                this.textFocusing.text = this.textFocusing.text.slice(0,this.linePositionIndex - 1);
-                let finalTextWidth = this.textFocusing.width;
-                if ((this.textFocusing.x + this.textFocusing.width) > (this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync) ) {
-                    this.line.x = this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync;
+            protected onUpInput() {
+                this.isInputDown = false
+            }
+
+            protected onDownInput(input, pointer): void {
+                if (!this.isFocused) return;
+                this.isInputDown = true;
+                if (pointer.msSinceLastClick < this.game.input.doubleTapRate) {
+                    this.textInput.setStyle({
+                        fontSize: this.inputConfigurationsInterface.fontSize,
+                        backgroundColor: '#3390ff',
+                        fill: '#ffffff'
+                    });
+                    this.isDoubleClick = true;
                 } else {
-                    this.line.x = this.textFocusing.x + this.textFocusing.width;
+                    this.textInput.setStyle({fontSize: this.inputConfigurationsInterface.fontSize});
+                    this.isDoubleClick = false;
                 }
-                if (this.linePositionIndex > 0) {
-                    if (this.line.x <= 2 * this.distAllElSync) {
-                        if (this.textFocusing.x < 0) {
-                            this.textInput.x -= finalTextWidth - initialTextWidth;
-                            this.textFocusing.x -= finalTextWidth - initialTextWidth;
-                        }else {
-                            this.textInput.x = 2 * this.distAllElSync;
-                            this.textFocusing.x = 2 * this.distAllElSync;
-
-                        }
-                        this.line.x = this.textFocusing.x + this.textFocusing.width;
-                    }
-                    --this.linePositionIndex;
-                }
-                if (this.game.time.events.paused) {
-                    this.line.visible = true;
-                    this.initRecreateBlinkTimer();
-                }
-            }
-
-            protected rightDown() : void {
-                this.isLineIndexChanged = true;
-                this.game.time.events.pause();
-                let initialTextWidth = this.textFocusing.width;
-                this.textFocusing.text = this.textFocusing.text =  [
-                    this.textFocusing.text.slice(0, this.linePositionIndex),
-                    this.textInput.text.charAt(this.linePositionIndex)
-                ].join('');
-                let finalTextWidth = this.textFocusing.width;
-                    this.line.x = this.textFocusing.x + this.textFocusing.width;
-                if (this.linePositionIndex < this.textInput.text.length) {
-                    if (this.line.x >= this.textFocusing.x + this.textFocusing.width) {
-                        if (this.textFocusing.x + this.textFocusing.width > this.spriteInpArea.x + this.spriteInpArea.width) {
-                            this.textInput.x += initialTextWidth - finalTextWidth;
-                            this.textFocusing.x += initialTextWidth - finalTextWidth;
-                        } else {
-                            if (this.line.x < this.spriteInpArea.x && this.line.x > this.textInput.x + this.textInput.width) {
-                                this.textInput.x = 2 * this.distAllElSync;
-                                this.textFocusing.x = 2 * this.distAllElSync;
-                            }
-                        }
-                        this.line.x = this.textFocusing.x + this.textFocusing.width;
-                    }
-                    ++this.linePositionIndex;
-                }
-                if (this.game.time.events.paused) {
-                    this.line.visible = true;
-                    this.initRecreateBlinkTimer();
+                let inputPositionClickX = this.game.input.mousePointer.x - this.inputGroup.x - input.x;
+                if (this.textInput.text.length > 0) {
+                    this.line.x = this.getCharPosition(inputPositionClickX);
+                } else {
+                    this.line.x = this.distAllElSync;
                 }
 
             }
 
-            protected enterDown() : void {
-                this.removeFocus();
-            }
-
-            protected onClickInput(input,pointer) : void {
-                if (this.isFocused) {
-                    this.textInput.setStyle(pointer.msSinceLastClick < this.game.input.doubleTapRate
-                        ? {fontSize: this.inputConfigurationsInterface.fontSize, backgroundColor: '#3390ff', fill: '#ffffff'}
-                        : {fontSize: this.inputConfigurationsInterface.fontSize});
-                    this.isDoubleClick = (pointer.msSinceLastClick < this.game.input.doubleTapRate);
-                    let inputPositionClickX = this.game.input.mousePointer.x - this.inputGroup.x - input.x;
-                    if (this.textInput.text.length > 0) {
-                        this.line.x = this.getCharPosition(inputPositionClickX);
-                    }else {
-                        this.line.x = this.distAllElSync;
-                    }
-                }
-            }
-
-            protected getCharPosition(inputClickedPos : number) {
+            protected getCharPosition(inputClickedPos: number) {
                 this.textFocusing.text = '';
                 this.textFocusing.visible = false;
-                let x : number;
-                let i : number;
+                let x: number;
+                let i: number;
                 let positioningOneTime = true;
                 i = 0;
-                for ( ; i < this.textInput.text.length; i++) {
+                for (; i < this.textInput.text.length; i++) {
                     if (this.textFocusing.width - this.textFocusing.x <= inputClickedPos && this.textInput.x == 2 * this.distAllElSync) {
                         x = this.textFocusing.x + this.textFocusing.width;
                         this.linePositionIndex = i;
@@ -444,18 +399,18 @@ export namespace DC {
                 }
                 this.isLineIndexChanged = true;
 
-                let textInThisPos : string = '';
-                for (let j = 0; j < this.linePositionIndex ; j++) {
+                let textInThisPos: string = '';
+                for (let j = 0; j < this.linePositionIndex; j++) {
                     textInThisPos += this.textInput.text.charAt(j);
                 }
                 this.textFocusing.text = textInThisPos;
-                if (this.textInput.text.length == 0 ) {
+                if (this.textInput.text.length == 0) {
                     this.line.x = this.spriteInpArea.worldPosition.x;
                 }
                 return x;
             }
 
-            protected onFocusInputArea() : void {
+            protected onFocusInputArea(): void {
                 if ((this.spriteInpArea.getBounds()
                     .contains(this.game.input.mousePointer.x, this.game.input.mousePointer.y))
                 ) {
@@ -465,18 +420,110 @@ export namespace DC {
                         this.timeBlink = this.game.time.events.loop(650, this.toggleLineVisibility, this);
                     }
                     this.spriteBorder.visible = true;
-                        this.game.input.keyboard.addCallbacks(this, null, null, this.anyKeyPressed);
+                    KeyboardManager.i.init(this.game);
+                    KeyboardManager.i.onLetterWrite.add((letter: string) => this.handleKeyPressed(letter));
+                    KeyboardManager.i.onKeyCombination.add((c: KeyboardAction) => this.generateKeyAction(c));
+                    // this.game.input.keyboard.addCallbacks(this, null, null, this.handleKeyPressed);
 
-                    this.backSpaceKey = this.game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
-                    this.backSpaceKey.onDown.add(this.deleteText, this);
-                    this.backSpaceKey.onUp.add(this.onUpFewKeys,this);
                 } else {
                     this.removeFocus();
                 }
 
             }
 
-            protected removeFocus() : void {
+            protected generateKeyAction(c: KeyboardAction): void {
+                switch (c) {
+                    case KeyboardAction.ESC:
+                        this.escDown();
+                        break;
+                    case KeyboardAction.RIGHT:
+                        this.rightDown();
+                        break;
+                    case KeyboardAction.LEFT:
+                        this.leftDown();
+                        break;
+                    case KeyboardAction.BACKSPACE:
+                        this.deleteText();
+                        break;
+                    case KeyboardAction.COPY:
+                        console.log('copy');
+                        break;
+                    case KeyboardAction.PASTE:
+                        console.log('paste');
+                        let str = 'char'
+                        this.handleKeyPressed('char');
+                        break;
+                }
+            }
+
+            protected leftDown(): void {
+                this.isLineIndexChanged = true;
+                this.game.time.events.pause();
+                let initialTextWidth = this.textFocusing.width;
+                this.textFocusing.text = this.textFocusing.text.slice(0, this.linePositionIndex - 1);
+                let finalTextWidth = this.textFocusing.width;
+                if ((this.textFocusing.x + this.textFocusing.width) > (this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync)) {
+                    this.line.x = this.spriteInpArea.x + this.spriteInpArea.width - 2 * this.distAllElSync;
+                } else {
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
+                }
+                if (this.linePositionIndex > 0) {
+                    if (this.line.x <= 2 * this.distAllElSync) {
+                        if (this.textFocusing.x < 0) {
+                            this.textInput.x -= finalTextWidth - initialTextWidth;
+                            this.textFocusing.x -= finalTextWidth - initialTextWidth;
+                        } else {
+                            this.textInput.x = 2 * this.distAllElSync;
+                            this.textFocusing.x = 2 * this.distAllElSync;
+
+                        }
+                        this.line.x = this.textFocusing.x + this.textFocusing.width;
+                    }
+                    --this.linePositionIndex;
+                }
+                if (this.game.time.events.paused) {
+                    this.line.visible = true;
+                    this.initRecreateBlinkTimer();
+                }
+            }
+
+            protected rightDown(): void {
+                this.isLineIndexChanged = true;
+                this.game.time.events.pause();
+                let initialTextWidth = this.textFocusing.width;
+                this.textFocusing.text = this.textFocusing.text = [
+                    this.textFocusing.text.slice(0, this.linePositionIndex),
+                    this.textInput.text.charAt(this.linePositionIndex)
+                ].join('');
+                let finalTextWidth = this.textFocusing.width;
+                this.line.x = this.textFocusing.x + this.textFocusing.width;
+                if (this.linePositionIndex < this.textInput.text.length) {
+                    if (this.line.x >= this.textFocusing.x + this.textFocusing.width) {
+                        if (this.textFocusing.x + this.textFocusing.width > this.spriteInpArea.x + this.spriteInpArea.width) {
+                            this.textInput.x += initialTextWidth - finalTextWidth;
+                            this.textFocusing.x += initialTextWidth - finalTextWidth;
+                        } else {
+                            if (this.line.x < this.spriteInpArea.x && this.line.x > this.textInput.x + this.textInput.width) {
+                                this.textInput.x = 2 * this.distAllElSync;
+                                this.textFocusing.x = 2 * this.distAllElSync;
+                            }
+                        }
+                        this.line.x = this.textFocusing.x + this.textFocusing.width;
+                    }
+                    ++this.linePositionIndex;
+                }
+                if (this.game.time.events.paused) {
+                    this.line.visible = true;
+                    this.initRecreateBlinkTimer();
+                }
+
+            }
+
+            protected escDown(): void {
+                this.removeFocus();
+            }
+
+            protected removeFocus(): void {
                 this.textInput.setStyle({fontSize: this.inputConfigurationsInterface.fontSize});
                 this.isFocused = false;
                 this.game.time.events.remove(this.timeBlink);
@@ -485,11 +532,11 @@ export namespace DC {
                 this.timeBlink = null;
             }
 
-            protected onUpFewKeys() : void {
+            protected onUpFewKeys(): void {
                 this.longPressWithCount = 0;
             }
 
-            protected checkDeleteAll() : void {
+            protected checkDeleteAll(): void {
                 if (!this.isDoubleClick) return;
                 this.textInput.text = this.textFocusing.text = '';
                 this.textInput.x = this.textFocusing.x = 2 * this.distAllElSync;
@@ -498,12 +545,12 @@ export namespace DC {
                 this.isDoubleClick = false;
             }
 
-            protected anyKeyPressed(char : string) : void {
+            protected handleKeyPressed(char: string): void {
                 if (!this.isFocused) return;
-                let initialTextWidth : number;
-                let finalTextWidth : number;
-                    this.checkDeleteAll();
-                    this.game.time.events.pause();
+                let initialTextWidth: number;
+                let finalTextWidth: number;
+                this.checkDeleteAll();
+                this.game.time.events.pause();
                 this.line.visible = true;
 
                 this.textFocusing.text = [
@@ -511,55 +558,52 @@ export namespace DC {
                     char,
                 ].join('');
                 initialTextWidth = this.textInput.width;
-                    this.textInput.text = [
+                this.textInput.text = [
                     this.textInput.text.slice(0, this.linePositionIndex),
                     char,
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
-
-                    if (this.placeHolder != null) {
-                        this.placeHolder.visible = this.textInput.text.length == 0;
-                    }
+                if (this.placeHolder != null) {
+                    this.placeHolder.visible = this.textInput.text.length == 0;
+                }
                 finalTextWidth = this.textInput.width;
 
-                    if (!this.isLineIndexChanged) {
-                        this.line.x = this.textInput.x + this.textInput.width;
-                        this.linePositionIndex = this.textInput.text.length;
+                if (!this.isLineIndexChanged) {
+                    this.line.x = this.textInput.x + this.textInput.width;
+                    this.linePositionIndex = this.textInput.text.length;
+                } else {
+                    if (this.linePositionIndex == this.textInput.text.length) {
+                        this.isLineIndexChanged = false;
                     }
-                    else {
-                        if (this.linePositionIndex == this.textInput.text.length){
-                            this.isLineIndexChanged = false;
-                        }
-                        this.linePositionIndex += 1;
-                        this.line.x = this.textFocusing.x + this.textFocusing.width;
-                    }
+                    this.linePositionIndex += char.length;
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
+                }
 
-                    if (this.line.x >= this.spriteInpArea.width) {
-                            this.textInput.x -= finalTextWidth - initialTextWidth;
-                            this.textFocusing.x -= finalTextWidth - initialTextWidth;
-                        this.line.x = this.textFocusing.x + this.textFocusing.width;
-                    }
+                if (this.line.x >= this.spriteInpArea.width) {
+                    this.textInput.x -= finalTextWidth - initialTextWidth;
+                    this.textFocusing.x -= finalTextWidth - initialTextWidth;
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
+                }
                 this.initRecreateBlinkTimer();
             }
 
-            protected deleteText() : void {
+            protected deleteText(): void {
                 if (!this.isFocused) return;
-                let initialTextWidth : number;
-                let finalTextWidth : number;
+                let initialTextWidth: number;
+                let finalTextWidth: number;
                 this.line.visible = true;
                 this.checkDeleteAll();
                 this.game.time.events.pause();
                 initialTextWidth = this.textInput.width;
 
 
-
                 this.textInput.text = this.textFocusing.text = [
-                        this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
-                        this.textInput.text.slice(this.linePositionIndex)
-                    ].join('');
+                    this.textInput.text.slice(0, Math.max(0, this.linePositionIndex - 1)),
+                    this.textInput.text.slice(this.linePositionIndex)
+                ].join('');
 
                 this.textFocusing.text = [
-                    this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
+                    this.textInput.text.slice(0, Math.max(0, this.linePositionIndex - 1)),
                 ].join('');
 
                 if (this.placeHolder != null) {
@@ -572,7 +616,7 @@ export namespace DC {
                 if (this.textInput.width < this.spriteInpArea.width || this.textInput.x >= 0) {
                     this.textInput.x = this.textFocusing.x = 2 * this.distAllElSync;
 
-                        this.line.x = this.textFocusing.x + this.textFocusing.width;
+                    this.line.x = this.textFocusing.x + this.textFocusing.width;
                 } else {
                     this.isLengthBig = true;
                     this.textInput.x -= finalTextWidth - initialTextWidth;
@@ -581,21 +625,22 @@ export namespace DC {
                 this.initRecreateBlinkTimer();
             }
 
-            protected initRecreateBlinkTimer() : void {
+            protected initRecreateBlinkTimer(): void {
                 if (this.timeStop != null) {
                     clearTimeout(this.timeStop);
                 }
                 this.timeStop = setTimeout(() => {
-                    this.game.time.events.add(200, () => {}, this);
+                    this.game.time.events.add(200, () => {
+                    }, this);
                     this.game.time.events.resume();
-                },500);
+                }, 500);
             }
 
-            protected toggleLineVisibility() : void {
+            protected toggleLineVisibility(): void {
                 this.line.visible = !this.line.visible;
             }
 
-            protected initLine(linePosition: number) : void {
+            protected initLine(linePosition: number): void {
                 this.line = this.game.add.graphics(
                     this.spriteInpArea.worldPosition.x + 2 * linePosition,
                     0, this.inputGroup);
@@ -610,8 +655,8 @@ export namespace DC {
                 this.line.visible = false;
             }
 
-            public  update() : void {
-                if (this.backSpaceKey != null && this.backSpaceKey.isDown){
+            public update(): void {
+                if (this.backSpaceKey != null && this.backSpaceKey.isDown) {
                     this.longPressWithCount++;
                     if (this.longPressWithCount > 30) {
                         this.deleteText();
@@ -630,6 +675,18 @@ export namespace DC {
                         this.rightDown();
                     }
                 }
+                // if (this.isInputDown) {
+                //     if (this.inputGroup.x + this.distAllElSync + this.textFocusing.width >= this.game.input.activePointer.x) {
+                //         this.textFocusing.text = [
+                //             this.textInput.text.slice(0, Math.max(0, this.linePositionIndex - 1)),
+                //             this.textInput.text.slice(this.linePositionIndex)
+                //         ].join('');
+                //         this.line.x = this.textFocusing.x + this.textFocusing.width;
+                //         this.linePositionIndex = Math.max(0, --this.linePositionIndex);
+                //         console.log('here input');
+                //     }
+                // }
+
                 if (this.line.x < this.spriteInpArea.x + this.distAllElSync) {
                     this.line.x = this.spriteInpArea.x + this.distAllElSync;
                 }
@@ -637,35 +694,36 @@ export namespace DC {
 
         }
 
+        //TODO all code of onFocus take in inPut Number class
         export class InputNumber extends InputArea {
-            private arrowGroup : Phaser.Group;
-            private arrowUpNum : Phaser.Sprite;
-            private arrowDownNum : Phaser.Sprite;
-            private whiteBgNum : Phaser.Sprite;
+            private arrowGroup: Phaser.Group;
+            private arrowUpNum: Phaser.Sprite;
+            private arrowDownNum: Phaser.Sprite;
+            private whiteBgNum: Phaser.Sprite;
 
-            constructor(g : Phaser.Game,inputConfigurationsInterface : InputConfigurations) {
-                super(g,inputConfigurationsInterface);
+            constructor(g: Phaser.Game, inputConfigurationsInterface: InputConfigurations) {
+                super(g, inputConfigurationsInterface);
                 this.initNumberClass();
             }
 
-            protected initNumberClass() : void {
+            protected initNumberClass(): void {
                 this.initNumberSubjects();
                 this.initEventsNumber();
             }
 
-            private  initNumberSubjects() {
+            private initNumberSubjects() {
                 this.spriteInpArea.width = this.inputConfigurationsInterface.width - this.inputConfigurationsInterface.fontSize - 2 * this.distAllElSync;
                 this.whiteBgNum = this.game.add.sprite(this.spriteInpArea.x + this.spriteInpArea.width,
-                    this.distAllElSync, Images.ImagesInputArea.getName(),null,this.inputGroup);
+                    this.distAllElSync, Images.ImagesInputArea.getName(), null, this.inputGroup);
 
                 this.arrowGroup = this.game.add.group(this.inputGroup);
                 this.arrowGroup.x = this.spriteInpArea.x + this.spriteInpArea.width;
 
                 this.arrowUpNum = this.game.add.sprite(0,
-                    0, Images.ImagesUp.getName(),null, this.arrowGroup);
+                    0, Images.ImagesUp.getName(), null, this.arrowGroup);
 
                 this.arrowDownNum = this.game.add.sprite(0,
-                    this.arrowUpNum.y + this.inputConfigurationsInterface.fontSize / 2, Images.ImagesDown.getName(),null, this.arrowGroup);
+                    this.arrowUpNum.y + this.inputConfigurationsInterface.fontSize / 2, Images.ImagesDown.getName(), null, this.arrowGroup);
 
                 this.arrowUpNum.width
                     = this.arrowUpNum.height
@@ -682,8 +740,8 @@ export namespace DC {
                 this.arrowGroup.visible = false;
             }
 
-            protected initText() : void {
-                this.textInput = this.game.add.text( 2 * this.distAllElSync,
+            protected initText(): void {
+                this.textInput = this.game.add.text(2 * this.distAllElSync,
                     this.spriteInpArea.worldPosition.y + 2 * this.distAllElSync,
                     '', {fontSize: this.inputConfigurationsInterface.fontSize}, this.inputGroup);
 
@@ -715,10 +773,10 @@ export namespace DC {
 
             }
 
-            protected anyKeyPressed(char : string) : void {
+            protected handleKeyPressed(char: string): void {
                 if (!this.isFocused) return;
-                let initialTextWidth : number;
-                let finalTextWidth : number;
+                let initialTextWidth: number;
+                let finalTextWidth: number;
                 this.checkDeleteAll();
                 this.game.time.events.pause();
                 this.line.visible = true;
@@ -751,9 +809,8 @@ export namespace DC {
                 if (!this.isLineIndexChanged) {
                     this.line.x = this.textInput.x + this.textInput.width;
                     this.linePositionIndex = this.textInput.text.length;
-                }
-                else {
-                    if (this.linePositionIndex == this.textInput.text.length){
+                } else {
+                    if (this.linePositionIndex == this.textInput.text.length) {
                         this.isLineIndexChanged = false;
                     }
                     this.linePositionIndex += 1;
@@ -768,24 +825,23 @@ export namespace DC {
                 this.initRecreateBlinkTimer();
             }
 
-            protected deleteText() : void {
+            protected deleteText(): void {
                 if (!this.isFocused) return;
-                let initialTextWidth : number;
-                let finalTextWidth : number;
+                let initialTextWidth: number;
+                let finalTextWidth: number;
                 this.line.visible = true;
                 this.checkDeleteAll();
                 this.game.time.events.pause();
                 initialTextWidth = this.textInput.width;
 
 
-
                 this.textInput.text = this.textFocusing.text = [
-                    this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
+                    this.textInput.text.slice(0, Math.max(0, this.linePositionIndex - 1)),
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
                 this.textFocusing.text = [
-                    this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
+                    this.textInput.text.slice(0, Math.max(0, this.linePositionIndex - 1)),
                 ].join('');
 
                 if (this.placeHolder != null) {
@@ -809,9 +865,9 @@ export namespace DC {
 
             protected onFocusInputArea() {
                 if ((this.spriteInpArea.getBounds()
-                    .contains(this.game.input.mousePointer.x, this.game.input.mousePointer.y))
+                        .contains(this.game.input.mousePointer.x, this.game.input.mousePointer.y))
                     || (this.arrowGroup.getBounds()
-                        .contains(this.game.input.mousePointer.x, this.game.input.mousePointer.y)
+                            .contains(this.game.input.mousePointer.x, this.game.input.mousePointer.y)
                     )
                 ) {
                     this.isFocused = true;
@@ -820,11 +876,11 @@ export namespace DC {
                         this.timeBlink = this.game.time.events.loop(650, this.toggleLineVisibility, this);
                     }
                     this.spriteBorder.visible = true;
-                    this.game.input.keyboard.addCallbacks(this, null, null, this.anyKeyPressed);
-
-                    this.backSpaceKey = this.game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
-                    this.backSpaceKey.onDown.add(this.deleteText, this);
-                    this.backSpaceKey.onUp.add(this.onUpFewKeys,this);
+                    this.game.input.keyboard.addCallbacks(this, null, null, this.handleKeyPressed);
+                    
+                    KeyboardManager.i.init(this.game);
+                    KeyboardManager.i.onLetterWrite.add((letter: string) => this.handleKeyPressed(letter));
+                    KeyboardManager.i.onKeyCombination.add((c: KeyboardAction) => this.generateKeyAction(c));
                 } else {
                     this.removeFocus();
                 }
@@ -832,6 +888,7 @@ export namespace DC {
 
             }
 
+            
             protected initEventsNumber() {
                 this.arrowUpNum.events.onInputDown.add(this.upArrowClicked, this);
                 this.arrowDownNum.events.onInputDown.add(this.downArrowClicked, this);
@@ -841,27 +898,27 @@ export namespace DC {
                 this.spriteInpArea.events.onInputOut.add(this.arrowGroupHide, this);
             }
 
-            private arrowGroupShow() : void {
+            private arrowGroupShow(): void {
                 this.arrowGroup.visible = true;
             }
 
-            private arrowGroupHide() : void {
+            private arrowGroupHide(): void {
                 if (!this.isFocused) {
                     this.arrowGroup.visible = false;
                 }
             }
 
-            private upArrowClicked() : void {
+            private upArrowClicked(): void {
                 this.convertAndReturn(true);
                 this.frontZeroRemove();
             }
 
-            private downArrowClicked() : void {
+            private downArrowClicked(): void {
                 this.convertAndReturn(false);
                 this.frontZeroRemove();
             }
 
-            private frontZeroRemove() : void {
+            private frontZeroRemove(): void {
                 if (this.textInput.text.length > 1) {
                     if (this.textInput.text.charAt(0) == '0') {
                         let index: number = 0;
@@ -880,7 +937,7 @@ export namespace DC {
                 }
             }
 
-            private convertAndReturn(addition : boolean){
+            private convertAndReturn(addition: boolean) {
                 let numOfInput: number = parseInt(this.textInput.text);
                 if (isNaN(numOfInput)) {
                     numOfInput = 0;
@@ -957,18 +1014,18 @@ export namespace DC {
                 //     }
                 //
                 // }
-                if(this.textInput.x >= 0) {
+                if (this.textInput.x >= 0) {
                     this.textInput.x = this.textFocusing.x = 2 * this.distAllElSync;
                 }
                 this.linePositionIndex = this.textFocusing.text.length;
                 this.line.x = this.textFocusing.x + this.textFocusing.width;
             }
 
-            private replaceAt(string, index, replace) : string {
+            private replaceAt(string, index, replace): string {
                 return string.substring(0, index) + replace + string.substring(index + 1);
             }
 
-            private deleteZeros(index : number) {
+            private deleteZeros(index: number) {
                 this.textFocusing.text = this.textInput.text = [
                     this.textInput.text.slice(index + 1, this.textInput.text.length)
                 ].join('');
@@ -978,12 +1035,12 @@ export namespace DC {
             }
         }
 
-        export class InputPassword extends InputArea{
+        export class InputPassword extends InputArea {
 
-            protected anyKeyPressed(char : string) : void {
+            protected handleKeyPressed(char: string): void {
                 if (!this.isFocused) return;
-                let initialTextWidth : number;
-                let finalTextWidth : number;
+                let initialTextWidth: number;
+                let finalTextWidth: number;
                 this.checkDeleteAll();
                 this.game.time.events.pause();
                 this.line.visible = true;
@@ -1014,9 +1071,8 @@ export namespace DC {
                 if (!this.isLineIndexChanged) {
                     this.line.x = this.textInput.x + this.textInput.width;
                     this.linePositionIndex = this.textInput.text.length;
-                }
-                else {
-                    if (this.linePositionIndex == this.textInput.text.length){
+                } else {
+                    if (this.linePositionIndex == this.textInput.text.length) {
                         this.isLineIndexChanged = false;
                     }
                     this.linePositionIndex += 1;
@@ -1031,28 +1087,28 @@ export namespace DC {
                 this.initRecreateBlinkTimer();
             }
 
-            protected deleteText() : void {
+            protected deleteText(): void {
                 if (!this.isFocused) return;
-                let initialTextWidth : number;
-                let finalTextWidth : number;
+                let initialTextWidth: number;
+                let finalTextWidth: number;
                 this.line.visible = true;
                 this.checkDeleteAll();
                 this.game.time.events.pause();
                 initialTextWidth = this.textInput.width;
 
                 this.textValue = [
-                    this.textValue.slice(0,  Math.max(0, this.linePositionIndex - 1)),
+                    this.textValue.slice(0, Math.max(0, this.linePositionIndex - 1)),
                     this.textValue.slice(this.linePositionIndex)
                 ].join('');
 
 
                 this.textInput.text = this.textFocusing.text = [
-                    this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
+                    this.textInput.text.slice(0, Math.max(0, this.linePositionIndex - 1)),
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
                 this.textFocusing.text = [
-                    this.textInput.text.slice(0,  Math.max(0, this.linePositionIndex - 1)),
+                    this.textInput.text.slice(0, Math.max(0, this.linePositionIndex - 1)),
                 ].join('');
 
                 if (this.placeHolder != null) {
@@ -1077,55 +1133,55 @@ export namespace DC {
         }
 
         export class SelectPlugin extends Phaser.Group {
-            private realWidth : number;
-            private groupOfSelect : Phaser.Group;
-            private groupArrow : Phaser.Group;
-            private selectorBorder : Phaser.Sprite;
-            private selectorArea : Phaser.Sprite;
-            private arrowBg : Phaser.Sprite;
-            private arrowDown : Phaser.Sprite;
-            private distAllElSync : number;
-            private isFocused : boolean;
-            private selectedText : Phaser.Text;
-            private maskText : Phaser.Graphics;
-            private scroller : Scroll;
-            private scrollConfiguration : ScrollConfiguration;
-            private widthScrollBar : number;
-            private readonly selectSetting : any;
+            private realWidth: number;
+            private groupOfSelect: Phaser.Group;
+            private groupArrow: Phaser.Group;
+            private selectorBorder: Phaser.Sprite;
+            private selectorArea: Phaser.Sprite;
+            private arrowBg: Phaser.Sprite;
+            private arrowDown: Phaser.Sprite;
+            private distAllElSync: number;
+            private isFocused: boolean;
+            private selectedText: Phaser.Text;
+            private maskText: Phaser.Graphics;
+            private scroller: ScrollForSelect;
+            private scrollConfiguration: SelectScrollConfiguration;
+            private widthScrollBar: number;
+            private readonly selectSetting: any;
 
-            constructor(g : Phaser.Game, selectConfigurations? : SelectConfigurations) {
+            constructor(g: Phaser.Game, selectConfigurations?: SelectConfigurations) {
                 super(g);
-                const selectDefault : SelectConfigurations = {
-                    x : 0,
-                    y : 0,
-                    width : 200,
-                    height : 30,
-                    textConfiguration: new TextConfigurations([''],['']),
-                    fontAndOtherSize : 17,
-                    heightOfShowingSpace : 200,
-                    byDefault : 0
+                const selectDefault: SelectConfigurations = {
+                    x: 0,
+                    y: 0,
+                    width: 200,
+                    height: 30,
+                    textConfiguration: new TextConfigurations([''], ['']),
+                    fontAndOtherSize: 17,
+                    heightOfShowingSpace: 200,
+                    byDefault: 0
                 };
-                this.selectSetting = Object.assign({}, selectDefault, selectConfigurations );
+                this.selectSetting = Object.assign({}, selectDefault, selectConfigurations);
                 this.init();
             }
 
-            private init() : void {
+            private init(): void {
                 this.initGenGroup();
                 this.initBackForeImages();
                 this.initSelectedText();
-                this.initMask(this.groupOfSelect.x, this.groupOfSelect.y, this.selectorArea.width, this.selectorArea.height,this.selectedText);
+                this.initMask(this.groupOfSelect.x, this.groupOfSelect.y, this.selectorArea.width, this.selectorArea.height, this.selectedText);
                 this.initScroller();
                 this.initEvents();
             }
 
             private countMaxLength() {
-                let textObject : Phaser.Text = this.game.add.text(0,0,'',{fontSize : this.selectSetting.fontAndOtherSize},this.groupOfSelect);
-                let textSizeChecking : Phaser.Text = this.game.add.text(0,0,'',{fontSize : this.selectSetting.fontAndOtherSize},this.groupOfSelect);
+                let textObject: Phaser.Text = this.game.add.text(0, 0, '', {fontSize: this.selectSetting.fontAndOtherSize}, this.groupOfSelect);
+                let textSizeChecking: Phaser.Text = this.game.add.text(0, 0, '', {fontSize: this.selectSetting.fontAndOtherSize}, this.groupOfSelect);
 
                 textSizeChecking.visible = textObject.visible = false;
                 let max = 0;
-                for (let i = 0; i < this.selectSetting.textConfiguration.label.length ; i++) {
-                    if (this.selectSetting.textConfiguration.label[i].length > max ) {
+                for (let i = 0; i < this.selectSetting.textConfiguration.label.length; i++) {
+                    if (this.selectSetting.textConfiguration.label[i].length > max) {
                         textObject.text = this.selectSetting.textConfiguration.label[i];
                         max = this.selectSetting.textConfiguration.label[i].length;
                     }
@@ -1133,7 +1189,7 @@ export namespace DC {
                     if (this.selectSetting.width + this.selectSetting.fontAndOtherSize < textSizeChecking.width) {
                         let k = 0;
                         textSizeChecking.text = '';
-                        do  {
+                        do {
                             textSizeChecking.text = this.selectSetting.textConfiguration.label[i].slice(0, k);
                             k++;
                         } while (this.selectSetting.width + this.selectSetting.fontAndOtherSize > textSizeChecking.width);
@@ -1147,7 +1203,7 @@ export namespace DC {
                 textObject.destroy();
             }
 
-            private initGenGroup() : void {
+            private initGenGroup(): void {
                 this.groupOfSelect = this.game.add.group(this);
                 this.groupOfSelect.x = this.selectSetting.x;
                 this.groupOfSelect.y = this.selectSetting.y;
@@ -1156,12 +1212,12 @@ export namespace DC {
             }
 
             private initBackForeImages() {
-                this.selectorBorder = this.game.add.sprite(0,0,Images.ImagesInputBorderColor.getName(),null, this.groupOfSelect);
+                this.selectorBorder = this.game.add.sprite(0, 0, Images.ImagesInputBorderColor.getName(), null, this.groupOfSelect);
                 this.countMaxLength();
                 this.selectorBorder.width = this.selectSetting.width + this.selectSetting.fontAndOtherSize;
                 this.selectorBorder.height = this.selectSetting.height;
                 this.selectorBorder.visible = false;
-                this.selectorArea = this.game.add.sprite(this.distAllElSync,this.distAllElSync,Images.ImagesInputArea.getName(),
+                this.selectorArea = this.game.add.sprite(this.distAllElSync, this.distAllElSync, Images.ImagesInputArea.getName(),
                     null, this.groupOfSelect);
                 this.selectorArea.width = this.selectorBorder.width - 2 * this.distAllElSync - this.selectSetting.fontAndOtherSize;
                 this.selectorArea.height = this.selectorBorder.height - 2 * this.distAllElSync;
@@ -1169,29 +1225,29 @@ export namespace DC {
                 this.initArrowGroup();
             }
 
-            private initSelectedText() : void {
+            private initSelectedText(): void {
                 this.selectedText = this.game.add.text(2 * this.distAllElSync, this.selectorArea.worldPosition.y + 2 * this.distAllElSync,
                     this.selectSetting.textConfiguration.label[this.selectSetting.byDefault],
-                    {fontSize: this.selectSetting.fontAndOtherSize},this.groupOfSelect);
-                this.selectedText.y =  2 * this.distAllElSync + this.selectorArea.height / 2 - this.selectedText.height / 2;
+                    {fontSize: this.selectSetting.fontAndOtherSize}, this.groupOfSelect);
+                this.selectedText.y = 2 * this.distAllElSync + this.selectorArea.height / 2 - this.selectedText.height / 2;
             }
 
-            private initMask(positionX : number, positionY : number, rectWidth : number, rectHeight : number,
-                             whoHaveMask : any) : void {
-                this.maskText = this.game.add.graphics(positionX,positionY, this);
+            private initMask(positionX: number, positionY: number, rectWidth: number, rectHeight: number,
+                             whoHaveMask: any): void {
+                this.maskText = this.game.add.graphics(positionX, positionY, this);
                 this.maskText.beginFill(0x000);
                 this.maskText.drawRect(this.distAllElSync, this.distAllElSync, rectWidth, rectHeight);
                 whoHaveMask.mask = this.maskText;
                 this.maskText.endFill();
             }
 
-            private initArrowGroup() : void {
+            private initArrowGroup(): void {
                 this.groupArrow = this.game.add.group(this);
                 this.groupArrow.x = this.groupOfSelect.x + this.selectorArea.width + this.distAllElSync;
                 this.groupArrow.y = this.groupOfSelect.y;
                 this.arrowBg = this.game.add.sprite(0,
-                    this.distAllElSync, Images.ImagesInputArea.getName(),null,this.groupArrow);
-                this.arrowDown = this.game.add.sprite(0,0,Images.ImagesDown.getName(),null, this.groupArrow);
+                    this.distAllElSync, Images.ImagesInputArea.getName(), null, this.groupArrow);
+                this.arrowDown = this.game.add.sprite(0, 0, Images.ImagesDown.getName(), null, this.groupArrow);
                 this.arrowBg.width = this.arrowDown.width = this.arrowDown.height = this.selectSetting.fontAndOtherSize;
                 this.arrowBg.height = this.selectorArea.height;
                 this.arrowDown.y = this.arrowBg.centerY - this.arrowDown.height / 2;
@@ -1201,14 +1257,13 @@ export namespace DC {
             private initEvents() {
                 this.groupOfSelect.inputEnableChildren = true;
                 this.groupArrow.inputEnableChildren = true;
-                this.game.input.onTap.add(this.onFocusSelectArea,this)
+                this.game.input.onTap.add(this.onFocusSelectArea, this)
             }
 
             private onFocusSelectArea() {
-                if (this.groupOfSelect.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y) ||
-                    this.groupArrow.getBounds().contains(this.game.input.activePointer.x,this.game.input.activePointer.y)
-                )
-                 {
+                if (this.groupOfSelect.getBounds().contains(this.game.input.activePointer.x, this.game.input.activePointer.y) ||
+                    this.groupArrow.getBounds().contains(this.game.input.activePointer.x, this.game.input.activePointer.y)
+                ) {
                     this.scroller.visible = !this.scroller.visible;
                     this.isFocused = this.selectorBorder.visible = true;
                 } else {
@@ -1217,7 +1272,7 @@ export namespace DC {
             }
 
             private initScroller() {
-                this.scrollConfiguration = new ScrollConfiguration(
+                this.scrollConfiguration = new SelectScrollConfiguration(
                     this.selectSetting.width + this.selectSetting.fontAndOtherSize - this.widthScrollBar - 2 * this.distAllElSync,
                     this.widthScrollBar, new Phaser.Point
                     (
@@ -1230,28 +1285,26 @@ export namespace DC {
                     ),
                     true,
                     0xFFFFFF,
-                    this.selectSetting.width + this.selectSetting.fontAndOtherSize - this.widthScrollBar + 2 * this.distAllElSync,
                     this.selectSetting.heightOfShowingSpace,
-                    this.selectSetting.fontAndOtherSize,
                     false,
                     this.selectedText,
                     this.selectorArea.width
                 );
-                this.scroller = new Scroll(this.game, this.initArray(),
+                this.scroller = new ScrollForSelect(this.game, this.initArray(),
                     this.scrollConfiguration);
                 this.scroller.visible = false;
             }
 
-            private initArray() : SelectorItem[] {
+            private initArray(): SelectorItem[] {
                 let selectItems = [];
                 for (let i = 0; i < this.selectSetting.textConfiguration.label.length; i++) {
                     const selectItem = new SelectorItem(
                         this.game, this.selectSetting.textConfiguration.label[i],
                         this.selectSetting.textConfiguration.value[i],
-                        {fontSize : this.selectSetting.fontAndOtherSize}, this.selectedText,
+                        {fontSize: this.selectSetting.fontAndOtherSize}, this.selectedText,
                         this.selectSetting.width + this.selectSetting.fontAndOtherSize
                     );
-                    selectItem.position.setTo( 0, selectItem.height * i);
+                    selectItem.position.setTo(0, selectItem.height * i);
                     selectItems.push(selectItem);
                 }
                 return selectItems;
@@ -1259,17 +1312,17 @@ export namespace DC {
 
         }
 
-        export const addInput = (g : Phaser.Game, inputConfigurations? : InputConfigurations) => {
+        export const addInput = (g: Phaser.Game, inputConfigurations?: InputConfigurations) => {
             let inputSetting;
             let inputDefault = {
                 x: 0,
                 y: 0,
                 width: 200,
                 height: 30,
-                fontSize : 18,
-                value : '',
-                placeHolderValue : '',
-                inputType : InputType.TEXT
+                fontSize: 18,
+                value: '',
+                placeHolderValue: '',
+                inputType: InputType.TEXT
             };
             inputSetting = Object.assign({}, inputDefault, inputConfigurations);
 
@@ -1277,14 +1330,14 @@ export namespace DC {
 
             switch (inputSetting.inputType) {
                 case InputType.NUMBER :
-                    console.log('setting x = '+inputSetting.x);
-                    input = new DC.Input.InputNumber(g,inputSetting);
+                    console.log('setting x = ' + inputSetting.x);
+                    input = new DC.Input.InputNumber(g, inputSetting);
                     break;
-                case InputType.PASSWORD:
-                    input = new DC.Input.InputPassword(g,inputSetting);
+                case InputType.PASSWORD :
+                    input = new DC.Input.InputPassword(g, inputSetting);
                     break;
                 case InputType.TEXT :
-                    input = new DC.Input.InputArea(g,inputSetting);
+                    input = new DC.Input.InputArea(g, inputSetting);
                     break;
             }
         }

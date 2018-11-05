@@ -450,7 +450,7 @@ export namespace DC {
                         break;
                     case KeyboardAction.PASTE:
                         console.log('paste');
-                        let str = 'char'
+                        let str = 'char';
                         this.handleKeyPressed('char');
                         break;
                 }

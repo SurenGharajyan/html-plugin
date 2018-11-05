@@ -447,11 +447,14 @@ export namespace DC {
                         break;
                     case KeyboardAction.COPY:
                         console.log('copy');
+						// let copyEvent = new ClipboardEvent('copy', { dataType: 'text/plain', data: 'Data to be copied' });
+						// document.dispatchEvent(copyEvent);
                         break;
                     case KeyboardAction.PASTE:
                         console.log('paste');
                         let str = 'char';
-                        this.handleKeyPressed('char');
+						// let pasteEvent = new ClipboardEvent('paste', { dataType: 'text/plain', data: 'My string' } );
+                        this.handleKeyPressed(str);
                         break;
                 }
             }
@@ -694,7 +697,6 @@ export namespace DC {
 
         }
 
-        //TODO all code of onFocus take in inPut Number class
         export class InputNumber extends InputArea {
             private arrowGroup: Phaser.Group;
             private arrowUpNum: Phaser.Sprite;
@@ -876,7 +878,7 @@ export namespace DC {
                         this.timeBlink = this.game.time.events.loop(650, this.toggleLineVisibility, this);
                     }
                     this.spriteBorder.visible = true;
-                    this.game.input.keyboard.addCallbacks(this, null, null, this.handleKeyPressed);
+                    // this.game.input.keyboard.addCallbacks(this, null, null, this.handleKeyPressed);
                     
                     KeyboardManager.i.init(this.game);
                     KeyboardManager.i.onLetterWrite.add((letter: string) => this.handleKeyPressed(letter));
@@ -888,7 +890,6 @@ export namespace DC {
 
             }
 
-            
             protected initEventsNumber() {
                 this.arrowUpNum.events.onInputDown.add(this.upArrowClicked, this);
                 this.arrowDownNum.events.onInputDown.add(this.downArrowClicked, this);
@@ -1051,15 +1052,18 @@ export namespace DC {
                     char,
                     this.textValue.slice(this.linePositionIndex)
                 ].join('');
-                char = '•';
+                let passwordHidenLetters ='';
+				for (let i = 0; i < char.length; i++) {
+					passwordHidenLetters += '•';
+				}
 
                 this.textFocusing.text = [
                     this.textInput.text.slice(0, this.linePositionIndex),
-                    char,
+					passwordHidenLetters,
                 ].join('');
                 this.textInput.text = [
                     this.textInput.text.slice(0, this.linePositionIndex),
-                    char,
+					passwordHidenLetters,
                     this.textInput.text.slice(this.linePositionIndex)
                 ].join('');
 
@@ -1135,7 +1139,7 @@ export namespace DC {
         export class SelectPlugin extends Phaser.Group {
             private realWidth: number;
             private groupOfSelect: Phaser.Group;
-            private groupArrow: Phaser.Group;
+            private slideDownArrowGroup: Phaser.Group;
             private selectorBorder: Phaser.Sprite;
             private selectorArea: Phaser.Sprite;
             private arrowBg: Phaser.Sprite;
@@ -1232,9 +1236,9 @@ export namespace DC {
                 this.selectedText.y = 2 * this.distAllElSync + this.selectorArea.height / 2 - this.selectedText.height / 2;
             }
 
-            private initMask(positionX: number, positionY: number, rectWidth: number, rectHeight: number,
+            private initMask(x: number, y: number, rectWidth: number, rectHeight: number,
                              whoHaveMask: any): void {
-                this.maskText = this.game.add.graphics(positionX, positionY, this);
+                this.maskText = this.game.add.graphics(x, y, this);
                 this.maskText.beginFill(0x000);
                 this.maskText.drawRect(this.distAllElSync, this.distAllElSync, rectWidth, rectHeight);
                 whoHaveMask.mask = this.maskText;
@@ -1242,12 +1246,12 @@ export namespace DC {
             }
 
             private initArrowGroup(): void {
-                this.groupArrow = this.game.add.group(this);
-                this.groupArrow.x = this.groupOfSelect.x + this.selectorArea.width + this.distAllElSync;
-                this.groupArrow.y = this.groupOfSelect.y;
+                this.slideDownArrowGroup = this.game.add.group(this);
+                this.slideDownArrowGroup.x = this.groupOfSelect.x + this.selectorArea.width + this.distAllElSync;
+                this.slideDownArrowGroup.y = this.groupOfSelect.y;
                 this.arrowBg = this.game.add.sprite(0,
-                    this.distAllElSync, Images.ImagesInputArea.getName(), null, this.groupArrow);
-                this.arrowDown = this.game.add.sprite(0, 0, Images.ImagesDown.getName(), null, this.groupArrow);
+                    this.distAllElSync, Images.ImagesInputArea.getName(), null, this.slideDownArrowGroup);
+                this.arrowDown = this.game.add.sprite(0, 0, Images.ImagesDown.getName(), null, this.slideDownArrowGroup);
                 this.arrowBg.width = this.arrowDown.width = this.arrowDown.height = this.selectSetting.fontAndOtherSize;
                 this.arrowBg.height = this.selectorArea.height;
                 this.arrowDown.y = this.arrowBg.centerY - this.arrowDown.height / 2;
@@ -1256,18 +1260,25 @@ export namespace DC {
 
             private initEvents() {
                 this.groupOfSelect.inputEnableChildren = true;
-                this.groupArrow.inputEnableChildren = true;
+                this.slideDownArrowGroup.inputEnableChildren = true;
                 this.game.input.onTap.add(this.onFocusSelectArea, this)
             }
 
             private onFocusSelectArea() {
-                if (this.groupOfSelect.getBounds().contains(this.game.input.activePointer.x, this.game.input.activePointer.y) ||
-                    this.groupArrow.getBounds().contains(this.game.input.activePointer.x, this.game.input.activePointer.y)
+                if (
+
+                    this.groupOfSelect.getBounds().contains(this.game.input.activePointer.x, this.game.input.activePointer.y) ||
+                    this.slideDownArrowGroup.getBounds().contains(this.game.input.activePointer.x, this.game.input.activePointer.y)
                 ) {
-                    this.scroller.visible = !this.scroller.visible;
                     this.isFocused = this.selectorBorder.visible = true;
+                    this.scroller.visible = true;
                 } else {
-                    this.isFocused = this.scroller.visible = this.selectorBorder.visible = false;
+					if (!this.scroller.scrollGroup.getBounds().contains(this.game.input.activePointer.x, this.game.input.activePointer.y)) {
+						this.scroller.visible = false;
+					}
+                    this.isFocused = false;
+
+                    this.selectorBorder.visible = false;
                 }
             }
 

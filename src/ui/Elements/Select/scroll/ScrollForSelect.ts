@@ -14,7 +14,7 @@ export class ScrollForSelect extends Phaser.Group {
     private isMaskClicked : boolean;
     private scrollBtnHeight : number;
     private scrollSpeed : number;
-    private scrollGroup : Phaser.Group;
+    private _scrollGroup : Phaser.Group;
     private scrollUp : Phaser.Image;
     private scrollDown : Phaser.Image;
     private scrollBtn : Phaser.Sprite;
@@ -27,6 +27,10 @@ export class ScrollForSelect extends Phaser.Group {
         super(g);
         this.init(array, configuration);
     }
+
+	public get scrollGroup(): Phaser.Group {
+		return this._scrollGroup;
+	}
 
     private init(arr : SelectorItem[], configuration : SelectScrollConfiguration) : void {
         this.initElements(arr,configuration);
@@ -110,19 +114,19 @@ export class ScrollForSelect extends Phaser.Group {
     }
 
     private initScrollSystem(config : SelectScrollConfiguration) : void {
-        this.scrollGroup = this.game.add.group(this);
-        this.scrollGroup.x = this.groupOfElements.x + config.widthGroup;
-        this.scrollGroup.y = 0;
+        this._scrollGroup = this.game.add.group(this);
+        this._scrollGroup.x = this.groupOfElements.x + config.widthGroup;
+        this._scrollGroup.y = 0;
 
         this.scrollUp = this.game.add.sprite(0,0,Images.ImagesUp.getName());
         this.scrollUp.scale.setTo(0.5);
         this.scrollUp.width = config.widthScrollBar;
-        this.scrollGroup.addChild(this.scrollUp);
+        this._scrollGroup.addChild(this.scrollUp);
 
         this.scrollDown = this.game.add.sprite(0, this.maskHeight - this.scrollUp.height,Images.ImagesDown.getName());
         this.scrollDown.scale.setTo(0.5);
         this.scrollDown.width = config.widthScrollBar;
-        this.scrollGroup.addChild(this.scrollDown);
+        this._scrollGroup.addChild(this.scrollDown);
 
         if (!config.arrowsEnabled) {
             this.scrollDown.visible = false;
@@ -132,17 +136,17 @@ export class ScrollForSelect extends Phaser.Group {
     }
 
     private initScrollArea(configKeys : ScrollBar) : void {
-        this.scrollArea = this.game.add.sprite(0,this.scrollUp.height,configKeys.scrollArea,false, this.scrollGroup);
+        this.scrollArea = this.game.add.sprite(0,this.scrollUp.height,configKeys.scrollArea,false, this._scrollGroup);
         this.scrollArea.width = this.scrollDown.width;
         this.scrollArea.height = this.scrollDown.y - this.scrollDown.height;
-        this.scrollGroup.addChild(this.scrollArea);
+        this._scrollGroup.addChild(this.scrollArea);
         this.scrollBtnHeight = (this.scrollDown.y - this.scrollDown.height) * this.maskHeight / this.groupOfElements.height;
 
         if (this.scrollBtnHeight < this.scrollDown.height) {
             //by default
             this.scrollBtnHeight = this.scrollDown.height;
         }
-        this.groupScrollBtn = this.game.add.group(this.scrollGroup);
+        this.groupScrollBtn = this.game.add.group(this._scrollGroup);
         this.groupScrollBtn.y = this.scrollUp.height;
         this.scrollBtn = this.game.add.sprite(0,0,configKeys.scroller,null,this.groupScrollBtn);
         this.scrollBtn.width = this.scrollDown.width;
@@ -159,9 +163,9 @@ export class ScrollForSelect extends Phaser.Group {
 
 
         if (this.maskOfElements != null) {
-            this.scrollGroup.y = this.maskOfElements.y;
+            this._scrollGroup.y = this.maskOfElements.y;
             if (this.groupOfElements.height <= this.maskHeight) {
-                this.scrollGroup.visible = false;
+                this._scrollGroup.visible = false;
             }
             this.scrollSpeed = 10;
         }
@@ -235,7 +239,7 @@ export class ScrollForSelect extends Phaser.Group {
     private mouseWheel() : void {
         if (this.game.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_UP
             && (this.maskOfElements.getBounds().contains(this.game.input.activePointer.worldX, this.game.input.activePointer.worldY)
-                || this.scrollGroup.getBounds().contains(this.game.input.activePointer.worldX, this.game.input.activePointer.worldY))
+                || this._scrollGroup.getBounds().contains(this.game.input.activePointer.worldX, this.game.input.activePointer.worldY))
         ) {
             if (this.scrollBtn.y > 0) {
                 // if (this.scrollBtn.y <= this.scrollArea.y) {
@@ -247,7 +251,7 @@ export class ScrollForSelect extends Phaser.Group {
             }
         } else if (this.game.input.mouse.wheelDelta === Phaser.Mouse.WHEEL_DOWN
             && (this.maskOfElements.getBounds().contains(this.game.input.activePointer.worldX, this.game.input.activePointer.worldY)
-                || this.scrollGroup.getBounds().contains(this.game.input.activePointer.worldX, this.game.input.activePointer.worldY))) {
+                || this._scrollGroup.getBounds().contains(this.game.input.activePointer.worldX, this.game.input.activePointer.worldY))) {
             if (this.scrollBtn.y + this.scrollBtnHeight < this.scrollArea.height) {
                 // if (this.scrollBtn.y + this.scrollBtnHeight + this.scrollSpeed > this.scrollDown.y - this.scrollDown.height) {
                 //     this.scrollBtn.y = this.scrollDown.y - this.scrollBtnHeight;

@@ -31,7 +31,7 @@ export class GameScreen extends Phaser.Group {
             x : 100,
             y : 250,
             width: 400,
-            inputType: InputType.NUMBER
+            inputType: InputType.TEXT
         });
     }
 

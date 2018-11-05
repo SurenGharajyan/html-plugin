@@ -61,7 +61,8 @@ export class KeyboardManager {
         if (
             e.keyCode >= Phaser.KeyCode.ZERO && e.keyCode <= Phaser.KeyCode.Z ||
             e.keyCode >= Phaser.KeyCode.NUMPAD_0 && e.keyCode <= Phaser.KeyCode.NUMPAD_DIVIDE ||
-            e.keyCode >= Phaser.KeyCode.COLON
+            e.keyCode >= Phaser.KeyCode.COLON ||
+            e.keyCode === Phaser.KeyCode.SPACEBAR
         ) {
             this._onLetterWrite.dispatch(e.key);
         }

@@ -1281,7 +1281,7 @@ export namespace DC {
                     this.selectorBorder.visible = false;
                 }
             }
-            //TODO browser check... what browser it is?
+            // TODO browser check... what browser it is?
             private initScroller() {
                 this.scrollConfiguration = new SelectScrollConfiguration(
                     this.selectSetting.width + this.selectSetting.fontAndOtherSize - this.widthScrollBar - 2 * this.distAllElSync,

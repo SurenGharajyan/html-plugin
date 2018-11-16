@@ -1163,7 +1163,7 @@ export namespace DC {
                     textConfiguration: new TextConfigurations([''], ['']),
                     fontAndOtherSize: 17,
                     heightOfShowingSpace: 200,
-                    byDefault: 0
+                    default: 0
                 };
                 this.selectSetting = Object.assign({}, selectDefault, selectConfigurations);
                 this.init();
@@ -1231,7 +1231,7 @@ export namespace DC {
 
             private initSelectedText(): void {
                 this.selectedText = this.game.add.text(2 * this.distAllElSync, this.selectorArea.worldPosition.y + 2 * this.distAllElSync,
-                    this.selectSetting.textConfiguration.label[this.selectSetting.byDefault],
+                    this.selectSetting.textConfiguration.label[this.selectSetting.default],
                     {fontSize: this.selectSetting.fontAndOtherSize}, this.groupOfSelect);
                 this.selectedText.y = 2 * this.distAllElSync + this.selectorArea.height / 2 - this.selectedText.height / 2;
             }
@@ -1291,8 +1291,8 @@ export namespace DC {
                         this.groupOfSelect.y + this.selectorBorder.y + this.selectorBorder.height
                     ),
                     new ScrollBar(
-                        Images.ImagesBackgroundTemplate.getName(),
-                        Images.ImagesInputBorderColor.getName()
+                        Images.ImagesBlueRectangle.getName(),
+                        Images.ImagesYellowRectangle.getName()
                     ),
                     true,
                     0xFFFFFF,

@@ -1,7 +1,7 @@
 import {DC} from "../Elements/htmlPlugin";
 import {TextConfigurations} from "../Elements/Select/TextConfigurations";
 import {InputType} from "../Elements/Input/enums/InputType";
-
+import {JSON as JSONAssets} from '../../assets';
 
 export class GameScreen extends Phaser.Group {
 
@@ -38,7 +38,8 @@ export class GameScreen extends Phaser.Group {
     private initRadioButtons(g : Phaser.Game) : void {
         const radioGroup = new DC.Input.RadioGroupButton(g, {
             x : 500,
-            y : 350
+            y : 350,
+			label: ['a','b','c']
         });
     }
 
@@ -47,16 +48,27 @@ export class GameScreen extends Phaser.Group {
             x: 200,
             y: 100,
             textConfiguration : new TextConfigurations(
-                ['McLaren','Mercedes-Benz','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
-                ["McLaren value", 'Mercedes-Benz value', 'Lamborghini value', 'BMW value',
-                'Opel value','Mitsubishi value', 'Nissan value','Kia value','Ford value','Peugeot value']
+                this.getNames(),
+				this.getNames()
                 ),
+		// 	['McLaren','Mercedes-Benz','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
+		// 	["McLaren value", 'Mercedes-Benz value', 'Lamborghini value', 'BMW value',
+		// 	'Opel value','Mitsubishi value', 'Nissan value','Kia value','Ford value','Peugeot value']
+
             //label : ['McLaren','Mercedes-Benz','Lamborghini', 'BMW', 'Opel', 'Mitsubishi', 'Nissan','Kia','Ford','Peugeot'],
             // ["Restaurant country", 'Restaurant city', 'Restaurant street', 'Restaurant complement',
             // 'Restaurant state', 'Restaurant neighborhood', 'Restaurant number', 'Restaurant zip code'],
-            heightOfShowingSpace : 100,
-            byDefault : 4
+            heightOfShowingSpace : 300,
+            default : 4
         });
     }
 
+	private getNames(): string[] {
+		let names: string[] = [];
+		let cacheText = this.game.cache.getJSON(JSONAssets.JsonNames.getName());
+		cacheText.forEach((current) => {
+			names.push(current);
+		});
+		return names;
+	}
 }

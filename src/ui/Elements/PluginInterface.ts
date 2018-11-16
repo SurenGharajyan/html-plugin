@@ -38,7 +38,7 @@ export namespace PluginInterfaces {
         textConfiguration? : TextConfigurations
         fontAndOtherSize?: number;
         heightOfShowingSpace?: number;
-        byDefault?: number;
+        default?: number;
     }
 
     export interface ScrollConfigurations {

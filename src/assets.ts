@@ -1,10 +1,10 @@
 /* AUTO GENERATED FILE. DO NOT MODIFY. YOU WILL LOSE YOUR CHANGES ON BUILD. */
 
 export namespace Images {
-    export class ImagesBackgroundTemplate {
-        static getName(): string { return 'background_template'; }
+    export class ImagesBlueRectangle {
+        static getName(): string { return 'blue-rectangle'; }
 
-        static getPNG(): string { return require('assets/images/background_template.png'); }
+        static getPNG(): string { return require('assets/images/blue-rectangle.png'); }
     }
     export class ImagesChecked {
         static getName(): string { return 'checked'; }
@@ -55,6 +55,11 @@ export namespace Images {
         static getName(): string { return 'white_background'; }
 
         static getPNG(): string { return require('assets/images/white_background.png'); }
+    }
+    export class ImagesYellowRectangle {
+        static getName(): string { return 'yellow-rectangle'; }
+
+        static getPNG(): string { return require('assets/images/yellow-rectangle.png'); }
     }
 }
 
@@ -155,7 +160,11 @@ export namespace BitmapFonts {
 }
 
 export namespace JSON {
-    class IExistSoTypeScriptWillNotComplainAboutAnEmptyNamespace {}
+    export class JsonNames {
+        static getName(): string { return 'names'; }
+
+        static getJSON(): string { return require('assets/json/names.json'); }
+    }
 }
 
 export namespace XML {
